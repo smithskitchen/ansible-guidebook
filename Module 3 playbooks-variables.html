@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Playbooks & Variables</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Playbooks &amp; Variables</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module3" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What Is a Playbook?</h2>
+    <p>
+        <b>Ansible playbooks</b> are YAML files that define a series of "plays"—each <b>play</b> refers to a set of tasks to be executed on a set of hosts. Playbooks are the heart of Ansible automation: human-readable, version-controllable, repeatable, and scalable.
+    </p>
+    <ul>
+        <li><b>Declarative:</b> You specify the desired final state, not the step-by-step commands ("make sure nginx is present and started", not "run apt install nginx...").</li>
+        <li><b>Modular:</b> Can call roles, include other files, loop tasks, and more.</li>
+        <li><b>Templated:</b> Allow variable and Jinja2 template usage.</li>
+    </ul>
+
+    <div class="diagram">
+        <svg width="93%" height="105">
+            <rect x="25" y="16" width="175" height="68" rx="15" fill="#e0f6fa" stroke="#009ea2"/>
+            <text x="53" y="42" font-size="20" font-family="Segoe UI,Arial" fill="#13777a" font-weight="bold">Playbook</text>
+            <rect x="275" y="18" width="185" height="32" fill="#fdecdc" stroke="#e39113" rx="9"/>
+            <text x="296" y="41" font-size="15" fill="#b37422">web group</text>
+            <rect x="275" y="62" width="185" height="32" fill="#e6f7db" stroke="#73aa2c" rx="9"/>
+            <text x="296" y="85" font-size="15" fill="#6c9756">db group</text>
+            <polygon points="200,50 275,33" fill="none" stroke="#009ea2" stroke-width="3" marker-end="url(#arrow5)"/>
+            <polygon points="200,67 275,80" fill="none" stroke="#009ea2" stroke-width="3" marker-end="url(#arrow6)"/>
+            <text x="113" y="68" font-size="13" fill="#4a4a4a">tasks/roles</text>
+            <defs>
+                <marker id="arrow5" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#009ea2"/>
+                </marker>
+                <marker id="arrow6" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#009ea2"/>
+                </marker>
+            </defs>
+        </svg>
+        <br>
+        <span style="font-size:0.98em;color:#234e70;">
+            <b>A playbook</b> applies tasks to target hosts or groups in a structured, repeatable way.
+        </span>
+    </div>
+
+    <h2>2. Playbook Structure: Anatomy</h2>
+    <h3>Minimal Example</h3>
+    <pre>
+---
+- name: Example Play
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+    </pre>
+    <ul>
+        <li><b>hosts:</b> target group(s) or host(s) defined in inventory</li>
+        <li><b>become: yes</b> elevates privileges (like <code>sudo</code>)</li>
+        <li><b>tasks:</b> list of actions (uses modules)</li>
+        <li><b>name:</b> describes the task (helpful in output and readability)</li>
+        <li><b>apt:</b> the module used (other examples: <code>yum</code>, <code>file</code>, <code>copy</code>, ...)</li>
+    </ul>
+    <h3>Playbook Sections</h3>
+    <table>
+        <tr>
+            <th>Section</th><th>Description</th>
+        </tr>
+        <tr>
+            <td>name</td><td>Human-readable name for the play (optional but recommended)</td>
+        </tr>
+        <tr>
+            <td>hosts</td><td>Target hosts or inventory groups</td>
+        </tr>
+        <tr>
+            <td>become</td><td>Privilege escalation (sudo/root)</td>
+        </tr>
+        <tr>
+            <td>vars</td><td>Inline variables for the play</td>
+        </tr>
+        <tr>
+            <td>tasks</td><td>Sequence of actions</td>
+        </tr>
+        <tr>
+            <td>handlers</td><td>Special tasks triggered upon change (see below)</td>
+        </tr>
+    </table>
+
+    <h3>Multiple Tasks and Handlers</h3>
+    <pre>
+---
+- name: Configure web server
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Deploy index.html
+      copy:
+        src: ./index.html
+        dest: /var/www/html/index.html
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+    </pre>
+    <ul>
+        <li><b>notify:</b> triggers the matching handler if changes occurred</li>
+        <li><b>handlers:</b> are only run if notified (for restart, reload, etc.)</li>
+    </ul>
+
+    <h3>Loops, Conditionals, and Includes</h3>
+    <ul>
+        <li><b>loop/with_items:</b> run a task multiple times with different inputs</li>
+        <li><b>when:</b> conditionally execute tasks</li>
+        <li><b>include_tasks/import_tasks:</b> modularization and reuse</li>
+    </ul>
+    <pre>
+- name: Install common tools
+  hosts: all
+  tasks:
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - curl
+        - rsync
+
+    - name: Only on Ubuntu
+      debug:
+        msg: "This is Ubuntu"
+      when: ansible_facts['os_family'] == "Debian"
+    </pre>
+
+    <h2>3. Variables in Ansible</h2>
+    <p>
+        <b>Variables</b> make playbooks powerful and reusable. They can be set in many ways—inline, in the inventory, in <code>group_vars</code>/<code>host_vars</code> directories, from facts, in role defaults, or via <code>-e</code> at the command line.
+    </p>
+    <h3>Where Variables Can Be Defined</h3>
+    <ol>
+        <li>Inline in <code>vars:</code> or <code>tasks</code></li>
+        <li>In your inventory (INI/YAML format)</li>
+        <li>In <code>group_vars/</code>, <code>host_vars/</code> directories</li>
+        <li>As extra vars with <code>-e var=value</code></li>
+        <li>With <code>set_fact</code> during playbook run</li>
+        <li>As "registered" variables (output from a task)</li>
+    </ol>
+    <h3>Example: Inline Variables and Usage</h3>
+    <pre>
+- name: Install a specific web server
+  hosts: web
+  become: yes
+  vars:
+    web_service: nginx
+
+  tasks:
+    - name: Install the package
+      apt:
+        name: "{{ web_service }}"
+        state: present
+
+    - name: Start the service
+      service:
+        name: "{{ web_service }}"
+        state: started
+    </pre>
+    <blockquote>
+        The <code>{{ web_service }}</code> variable is substituted by its value wherever it appears.
+    </blockquote>
+    <h3>Variables in the Inventory</h3>
+    <pre>
+[web]
+web1 ansible_host=192.168.1.10 web_service=nginx
+
+[db]
+db1 ansible_host=192.168.1.20 db_service=postgresql
+
+[web:vars]
+http_port=80
+    </pre>
+    <h3>group_vars/ and host_vars/ Files</h3>
+    <pre>
+inventory/
+  group_vars/
+    web.yaml
+    db.yaml
+  host_vars/
+    web1.yaml
+    db1.yaml
+    </pre>
+    <pre>
+# group_vars/web.yaml
+web_service: nginx
+http_port: 8080
+
+# host_vars/web1.yaml
+ansible_host: 192.168.1.10
+hostname: 'Web Server Alpha'
+    </pre>
+    <h3>Facts as Variables</h3>
+    <p>
+        <b>Facts</b> are variables automatically discovered by Ansible and available within the playbook, e.g.:<br>
+        <code>ansible_facts['os_family']</code>, <code>ansible_facts['distribution']</code>, <code>ansible_default_ipv4.address</code>
+    </p>
+    <pre>
+- name: Print detected OS
+  hosts: all
+  tasks:
+    - name: Show OS
+      debug:
+        msg: "Operating System: {{ ansible_facts['distribution'] }}"
+    </pre>
+
+    <h3>Registering Task Output as Variables</h3>
+    <pre>
+- name: Show last 3 log lines
+  hosts: web
+  tasks:
+    - name: Get log content
+      shell: tail -3 /var/log/syslog
+      register: result
+
+    - name: Output to screen
+      debug:
+        var: result.stdout
+    </pre>
+    <ul>
+        <li><b>register:</b> captures the result for later use.</li>
+    </ul>
+
+    <h3>Best Practices: Variable Precedence (Simplified)</h3>
+    <ol>
+        <li>Extra vars (set via <code>-e</code>)</li>
+        <li>Task vars (<code>vars:</code> at the task/play level)</li>
+        <li>Facts (<code>set_fact</code>, gathered facts)</li>
+        <li>Play vars_files, play vars_prompt</li>
+        <li>Host and group vars</li>
+        <li>Inventory vars</li>
+        <li>Role defaults</li>
+    </ol>
+    <div class="tip">Higher precedence overrides lower. See the <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#understanding-variable-precedence" target="_blank">Ansible precedence docs</a> for details.
+    </div>
+
+    <h2>4. Templating with Jinja2</h2>
+    <p>
+        <b>Jinja2 templates</b> let you use variables, logic, and filters inside your playbooks and files. This is how <code>{{ variable }}</code> and advanced manipulations work.
+    </p>
+    <pre>
+- name: Use a template to deploy a config
+  hosts: web
+  tasks:
+    - name: Deploy customized config
+      template:
+        src: configs/app.conf.j2
+        dest: /etc/app.conf
+    </pre>
+    <pre>
+# configs/app.conf.j2
+app_name = {{ app_name }}
+listen_port = {{ http_port }}
+    </pre>
+    <ul>
+        <li>Jinja2 supports logic: <code>{% if %}, {% for %}, filters: {{ list | join(',') }}</code></li>
+    </ul>
+    <pre>
+# Example with conditionals (in a template file)
+{% if enable_feature_x %}
+feature_x = enabled
+{% endif %}
+    </pre>
+    <blockquote>
+        <b>Tip:</b> See <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_templating.html" target="_blank">Jinja2 templating docs</a> for more!
+    </blockquote>
+
+    <h2>5. Practical Exercises</h2>
+
+    <h3>Exercise 1: Write a Playbook to Install Apache/Nginx and Ensure Service Running</h3>
+    <pre>
+---
+- name: Web server setup
+  hosts: web
+  become: yes
+  vars:
+    web_package: nginx   # Change to 'httpd' or 'apache2' for Apache
+
+  tasks:
+    - name: Install web server
+      apt:
+        name: "{{ web_package }}"
+        state: present
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Install web server (RHEL)
+      yum:
+        name: "{{ web_package }}"
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Ensure service is running
+      service:
+        name: "{{ web_package }}"
+        state: started
+    </pre>
+    <ol>
+        <li><b>Save as:</b> <code>webserver.yaml</code></li>
+        <li><b>Run:</b> <code>ansible-playbook -i hosts webserver.yaml</code></li>
+    </ol>
+    <blockquote>
+        This playbook installs <code>nginx</code> (Debian/Ubuntu) or <code>httpd</code> (RHEL/CentOS) and starts the service on all <code>[web]</code> servers. You can use a variable to switch between nginx/httpd.
+    </blockquote>
+
+    <h3>Exercise 2: Use Variables for the Service Name</h3>
+    <pre>
+---
+- name: Generic web server installer
+  hosts: all
+  become: yes
+  vars:
+    srv_name: httpd
+
+  tasks:
+    - name: Install web server
+      yum:
+        name: "{{ srv_name }}"
+        state: present
+
+    - name: Start web server
+      service:
+        name: "{{ srv_name }}"
+        state: started
+    </pre>
+    <blockquote>
+        Change <code>srv_name</code> to nginx, httpd, apache2, etc., for full flexibility across environments.
+    </blockquote>
+
+    <h3>Exercise 3: Use Registered Variables and Templates</h3>
+    <pre>
+---
+- name: System info page
+  hosts: web
+  become: yes
+  tasks:
+    - name: Get hostname
+      command: hostname
+      register: host_info
+
+    - name: Create /var/www/html/info.html
+      copy:
+        dest: /var/www/html/info.html
+        content: |
+          This is host: {{ host_info.stdout }}
+    </pre>
+
+    <h2>6. Troubleshooting and Best Practices</h2>
+    <h4>Common Pitfalls</h4>
+    <ul>
+        <li>Indentation errors in YAML (always use 2 spaces)</li>
+        <li>Unquoted variables that might be strings with special chars</li>
+        <li>Wrong hosts specification—ensure group/hostname exists in inventory</li>
+        <li>Conflicting variables (precedence): Double-check <code>group_vars</code>, <code>host_vars</code>, play vars, etc.</li>
+        <li><code>when</code> requiring correct Python data types (<code>true</code>/<code>false</code>, not <code>True</code>/<code>False</code>)</li>
+    </ul>
+    <h4>Best Practices</h4>
+    <ul>
+        <li>Name your plays and tasks clearly for human readability</li>
+        <li>Use variables everywhere—keep playbooks DRY, flexible, and readable</li>
+        <li>Separate configuration from code: move variables to <code>group_vars</code>/<code>host_vars</code> when scaling</li>
+        <li>Leverage handlers for service reloads/restarts, triggered only when needed</li>
+        <li>Check the output of <code>ansible-playbook</code> for colored change indications</li>
+        <li>Use <code>ansible-playbook --check</code> for “dry runs” when possible</li>
+        <li>Put large data, repeated files, or config files in <code>templates/</code> and <code>files/</code> directories</li>
+    </ul>
+
+    <h2>7. Reference & More Learning</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html" target="_blank">Official Playbook Introduction</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html" target="_blank">Variables in Playbooks</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html" target="_blank">Playbook Best Practices</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html" target="_blank">YAML Syntax for Playbooks</a></li>
+        <li><a href="https://jinja.palletsprojects.com/" target="_blank">Jinja2 Template Documentation</a></li>
+    </ul>
+
+    <div class="tip">
+        Playbooks and variables are the foundation of Ansible automation.  
+        <b>Master these, and you have the power to automate any configuration or deployment scenario.</b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Playbooks & Variables
+</footer>
+</body>
+</html>

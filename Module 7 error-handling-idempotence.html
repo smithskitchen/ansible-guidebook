@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Error Handling &amp; Idempotence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Error Handling &amp; Idempotence</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module7" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+    
+    <h2>1. Introduction to Error Handling &amp; Idempotence</h2>
+    <p>
+        Reliable automation means handling errors <b>gracefully</b> and writing playbooks that are <b>idempotent</b> (safe to re-run any number of times with the same result).
+    </p>
+
+    <div class="diagram">
+        <svg width="95%" height="100">
+            <rect x="30" y="20" width="170" height="43" rx="13" fill="#fee7e6" stroke="#e14436"/>
+            <text x="54" y="49" font-size="18" fill="#e14436" font-weight="bold">Play/Task Fails?</text>
+            <line x1="200" y1="42" x2="260" y2="42" stroke="#e14436" stroke-width="3" marker-end="url(#arrowFail)"/>
+            <rect x="270" y="15" width="180" height="34" rx="10" fill="#d6edea" stroke="#35af87"/>
+            <text x="290" y="37" font-size="15" fill="#24957a">Ignore, Retry, or Skip</text>
+            <line x1="370" y1="50" x2="460" y2="50" stroke="#35af87" stroke-width="3" marker-end="url(#arrowNoti)"/>
+            <rect x="470" y="32" width="150" height="50" rx="10" fill="#fff9cc" stroke="#e2c44a"/>
+            <text x="488" y="60" font-size="15" fill="#a79418">Handlers/Notify</text>
+            <defs>
+                <marker id="arrowFail" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#e14436"/>
+                </marker>
+                <marker id="arrowNoti" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#35af87"/>
+                </marker>
+            </defs>
+        </svg>
+        <span style="font-size:1.07em;color:#234e70;">
+            Ansible error handling lets you ignore, skip, or respond with handlers automatically!
+        </span>
+    </div>
+    
+    <h2>2. Error Handling In Depth</h2>
+    <h3>A. Built-in Error Options</h3>
+    <ul>
+        <li><b>ignore_errors:</b> Keep running the play even if a task fails. <i>Notifies in output, but doesn’t stop the playbook.</i></li>
+        <li><b>failed_when:</b> Customize what constitutes a failure—useful for non-standard exit codes or file checks.</li>
+        <li><b>changed_when:</b> Customize when a task should report as “changed.”</li>
+        <li><b>rescue/block:</b> Try/except (like try/catch in code): block a set of tasks, run <b>rescue</b> block if any fail.</li>
+        <li><b>register:</b> Capture a task’s output for inspection and conditional error handling.</li>
+        <li><b>max_fail_percentage:</b> Fail play if more than X% of hosts fail a task.</li>
+    </ul>
+
+    <h3>B. Syntax Examples</h3>
+    <h4>ignore_errors</h4>
+    <pre>
+- name: Try to restart a service (but don’t fail the play)
+  service:
+    name: apache2
+    state: restarted
+  ignore_errors: yes
+    </pre>
+
+    <h4>failed_when (custom failure detection)</h4>
+    <pre>
+- name: Check result, only fail if output contains "ERROR"
+  shell: some-script.sh
+  register: result
+  failed_when: "'ERROR' in result.stdout"
+    </pre>
+    <h4>changed_when (prevent false "changed")</h4>
+    <pre>
+- name: Run idempotent script
+  command: /usr/local/bin/mysetup.sh
+  changed_when: false
+    </pre>
+    <h4>block / rescue / always</h4>
+    <pre>
+- block:
+    - name: Try something risky
+      command: /bin/false
+  rescue:
+    - name: Handle failure gracefully
+      debug:
+        msg: "Oops, task failed - running rescue"
+  always:
+    - name: Cleanup always runs
+      file:
+        path: /tmp/tempfile
+        state: absent
+    </pre>
+    <blockquote>
+        <b>block</b>: try these tasks <br>
+        <b>rescue</b>: if any fail, do these<br>
+        <b>always</b>: always run, even on error or failure/skip
+    </blockquote>
+    
+    <h4>max_fail_percentage</h4>
+    <pre>
+- hosts: web
+  max_fail_percentage: 20
+  tasks:
+    - name: Must succeed on 80%+ hosts
+      ping:
+    </pre>
+
+    <h4>register: and patterns for retries</h4>
+    <pre>
+- name: Try to fetch a URL (may be flaky)
+  uri:
+    url: "https://example.com"
+  register: url_check
+  retries: 5
+  delay: 2
+  until: url_check.status == 200
+    </pre>
+
+    <h4>Best Practices for Error Handling</h4>
+    <ul>
+        <li>Only <b>ignore_errors</b> if the task is truly non-critical.</li>
+        <li>Prefer <code>block/rescue</code> for well-scoped, limited error response logic.</li>
+        <li>Always use <b>handlers</b> to keep restarts/reloads idempotent and conditional.</li>
+        <li>Check <b>register</b> variables for return codes/output and handle gracefully.</li>
+    </ul>
+
+    <h2>3. Idempotence: "Do No Harm on Repeat"</h2>
+    <p>
+        <b>Idempotence</b> is the property that running a playbook multiple times has the same effect as running once. Ansible modules are typically idempotent by design!
+    </p>
+    <ul>
+        <li>Declarative modules (<code>apt</code>, <code>yum</code>, <code>file</code>, <code>user</code>, etc.) just set state—re-running does NOT duplicate work.</li>
+        <li>Custom shell/command tasks are often non-idempotent. Use <code>creates:</code>, <code>removes:</code>, <code>changed_when:</code> smartly to avoid repeated work.</li>
+        <li>Good idempotent playbooks are "safe to run anytime" and can be scheduled/triggered via CI/CD.</li>
+    </ul>
+    <h4>Examples</h4>
+    <pre>
+- name: Good (idempotent) - Ensures line is present
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "net.ipv4.ip_forward=1"
+
+- name: Bad (non-idempotent) - Appends every time!
+  shell: echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+    </pre>
+    <h4>Using creates/removes</h4>
+    <pre>
+- name: Run setup only if marker file not present (idempotent)
+  shell: /opt/setup.sh
+  args:
+    creates: /opt/.setup_done
+    </pre>
+    <div class="tip">
+        Always check whether the module is idempotent (<code>ansible-doc &lt;module&gt;</code>), and adjust custom code accordingly!
+    </div>
+
+    <h2>4. Handlers, Notifications, and Conditional Restarts</h2>
+    <p>
+        <b>Handlers</b> in Ansible are special tasks, triggered by a <b>notify</b> keyword in another task. Best practice: only restart/reload services if a configuration file changes.
+    </p>
+    <h4>Example: Basic Handler</h4>
+    <pre>
+tasks:
+  - name: Deploy config
+    template:
+      src: myservice.conf.j2
+      dest: /etc/myservice.conf
+    notify: Restart myservice
+
+handlers:
+  - name: Restart myservice
+    service:
+      name: myservice
+      state: restarted
+    </pre>
+    <ul>
+        <li>This ensures the handler is only run if <code>template</code> changed the file (not on every run).</li>
+        <li>Handlers are only run <b>once</b> per play per host (even if notified multiple times).</li>
+    </ul>
+    <h4>Advanced: Multiple Handlers</h4>
+    <pre>
+- name: Deploy config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+  notify:
+    - Restart ssh
+    - Audit notify
+
+handlers:
+  - name: Restart ssh
+    service:
+      name: ssh
+      state: restarted
+
+  - name: Audit notify
+    debug:
+      msg: "sshd config changed on {{ inventory_hostname }}"
+    </pre>
+
+    <h2>5. Practical Exercises</h2>
+    <h3>A. Idempotent Service Restart (only if config changed)</h3>
+    <pre>
+---
+- name: Nginx config and idempotent restart
+  hosts: web
+  become: yes
+  tasks:
+    - name: Deploy nginx config
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+    </pre>
+    <ol>
+        <li>Make your handler’s effect conditional on actual config change (handled automatically).</li>
+        <li>Test by running the playbook repeatedly—it should only reload nginx if the config template changed!</li>
+    </ol>
+
+    <h3>B. Error Handling with Rescue Block</h3>
+    <pre>
+---
+- name: Test error handling
+  hosts: all
+  tasks:
+    - name: Try risky task
+      block:
+        - name: Might fail
+          shell: /bin/false
+      rescue:
+        - name: Handle the failure
+          debug:
+            msg: "Recovered and moving on"
+      always:
+        - name: Always execute (cleanup, etc)
+          file:
+            path: /tmp/tmpfile
+            state: absent
+    </pre>
+    <blockquote>
+        <b>Run:</b> <code>ansible-playbook errortest.yaml</code> (observe task flow: rescue and always are invoked on failure).
+    </blockquote>
+
+    <h3>C. Handling Task Failure and Notification With Registered Variables</h3>
+    <pre>
+---
+- name: Start and check a service, recover on failure
+  hosts: all
+  become: yes
+  tasks:
+    - name: Start httpd
+      service:
+        name: httpd
+        state: started
+      register: result
+      ignore_errors: yes
+
+    - name: Notify if failed
+      debug:
+        msg: "httpd failed to start on {{ inventory_hostname }}"
+      when: result.failed
+    </pre>
+
+    <h4>D. Custom Failure Detection (failed_when)</h4>
+    <pre>
+- shell: "curl -s http://localhost/ | grep Hello"
+  register: result
+  failed_when: result.rc != 0
+    </pre>
+
+    <h2>6. Best Practices Checklist</h2>
+    <ul>
+        <li>Check the idempotence of every task (use <code>ansible-playbook --check</code> or <code>--diff</code> to preview)</li>
+        <li>Use handlers and “notify” for all service (re)starts</li>
+        <li>Use <code>block</code>/<code>rescue</code>/<code>always</code> for multi-step “try/except/finally”</li>
+        <li>For shell/command tasks, combine <code>register</code>, <code>failed_when</code>, and <code>changed_when</code> for resilience</li>
+        <li>Use <code>max_fail_percentage</code> for distributed or critical mass scenarios</li>
+        <li>Write plays to be idempotent so that you can safety use repeats or automation triggers (CI/CD, timers, etc)</li>
+    </ul>
+
+    <h2>7. References & Further Reading</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html" target="_blank">Official Docs: Error Handling</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_checkmode.html" target="_blank">Check Mode (Idempotence)</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/handler_module.html" target="_blank">Handlers Module Reference</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html" target="_blank">Best Practices for Playbooks</a></li>
+    </ul>
+
+    <div class="tip">
+        <strong>Error handling and idempotence are key to safe, robust automation.<br>
+        Practice these every time—your infrastructure and coworkers will thank you!</strong>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Error Handling &amp; Idempotence
+</footer>
+</body>
+</html>

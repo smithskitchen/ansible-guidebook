@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Key Components & YAML Basics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        ul, ol {
+            margin: 1em 0 1em 1.5em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Key Components & YAML Basics</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module3" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+    <h2 id="key-components">2. Key Components of Ansible</h2>
+    <p>
+        Ansible’s architecture is simple yet powerful. Understanding its three main building blocks will help you automate efficiently.
+    </p>
+    <ul>
+        <li>
+            <strong>Control Node:</strong>
+            <ul>
+                <li>
+                    The machine (your laptop, a server, or CI runner) where Ansible is installed and you run playbooks or commands.
+                </li>
+                <li>
+                    <b>Only the control node needs Ansible software installed.</b>
+                </li>
+                <li>
+                    <strong>Requirements:</strong> Linux, macOS, or Windows Subsystem for Linux (WSL) and Python (3.x recommended).
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Managed Nodes (Hosts):</strong>
+            <ul>
+                <li>
+                    These are the remote systems/devices Ansible manages, such as Linux servers, VMs, cloud instances, or network devices.
+                </li>
+                <li>
+                    No agent or Ansible software installation required—just SSH (for Linux/Unix) or WinRM (for Windows).
+                </li>
+                <li>
+                    Managed nodes may be:
+                    <ul>
+                        <li>Physical servers &amp; virtual machines</li>
+                        <li>Public/private cloud VMs (AWS, Azure, GCP, OCI, etc.)</li>
+                        <li>Containers</li>
+                        <li>Network devices (routers, switches – with supported modules)</li>
+                    </ul>
+                </li>
+                <li>
+                    For <b>Windows hosts</b>, Ansible uses WinRM, and some setup is required on the Windows machine.
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Inventory File:</strong>
+            <ul>
+                <li>
+                    The <b>inventory</b> defines which machines are managed by Ansible and groups them logically (e.g., <code>[web]</code>, <code>[db]</code>).
+                </li>
+                <li>
+                    <b>Static inventory:</b>
+                    <ul>
+                        <li>Usually a simple file, in INI or YAML format, manually listing hosts and groups.</li>
+                    </ul>
+                </li>
+                <li>
+                    <b>Dynamic inventory:</b>
+                    <ul>
+                        <li>Generated at runtime by scripts or plugins (useful for cloud, dynamic infrastructure).</li>
+                        <li>Includes official plugins for AWS, GCP, Azure, Oracle Cloud, VMware, etc.</li>
+                    </ul>
+                </li>
+                <li>
+                    You can set host or group variables such as <code>ansible_user</code>, <code>ansible_port</code>, or custom variables.
+                </li>
+                <li>
+                    <strong>Example static inventory (INI format):</strong>
+                    <pre>
+[web]
+web01.example.com ansible_user=ubuntu
+web02.example.com ansible_user=ubuntu
+
+[db]
+db01.example.com ansible_user=postgres
+
+[all:vars]
+ansible_port=22
+                    </pre>
+                </li>
+                <li>
+                    <strong>Tip:</strong> Use the <code>-i filename</code> option to select your inventory per project.
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <div class="warn">
+        <b>Diagram:</b>
+        <div style="font-family:monospace;white-space:pre;">
+[You: Control Node] --(SSH/WinRM)--> [Managed Node(s)]
+            </div>
+        <em>Playbooks and commands are run from the control node and executed on managed nodes.</em>
+    </div>
+
+    <h2 id="yaml-basics">3. YAML Basics (Syntax for Playbooks)</h2>
+    <p>
+        YAML (YAML Ain’t Markup Language) is designed for readability—making Ansible playbooks easy to create and audit.
+    </p>
+    <ul>
+        <li>
+            <strong>Spaces, not tabs:</strong> Indentation is by spaces. <b>Never use tabs.</b>
+        </li>
+        <li>
+            <strong>Colons <code>:</code> after keys:</strong> Each key is separated from its value by a colon.
+        </li>
+        <li>
+            <strong>Dashes <code>-</code> for list items:</strong> Lists begin with a dash.
+        </li>
+        <li>
+            Start the file with <code>---</code> (optional, best practice).
+        </li>
+        <li>
+            Indent by 2 spaces per level (common convention).
+        </li>
+    </ul>
+    <h3>YAML in Playbooks – Example</h3>
+    <pre>
+---
+- name: Install and run nginx web server
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+    </pre>
+    <h3>Common YAML Patterns & Gotchas</h3>
+    <ul>
+        <li><b>Consistent indentation</b> is crucial (2 or 4 spaces; 2 is most common).</li>
+        <li><b>Avoid tabs</b>; configure your editor to insert spaces.</li>
+        <li>
+            No trailing spaces after a colon in keys (<code>key: value</code> not <code>key:  value</code>).
+        </li>
+        <li>
+            If a string contains special characters (colons, hash, etc.), use quotes: <code>desc: "Path: /var/www"</code>
+        </li>
+    </ul>
+    <h3>Miscellaneous YAML Examples</h3>
+    <ul>
+        <li>
+            <strong>Basic variable:</strong>
+            <pre>my_var: "Hello World"</pre>
+        </li>
+        <li>
+            <strong>List of items:</strong>
+            <pre>
+users:
+  - alice
+  - bob
+  - carol
+            </pre>
+        </li>
+        <li>
+            <strong>Dictionaries/nested structures:</strong>
+            <pre>
+mounts:
+  - src: /dev/sda1
+    target: /
+    fstype: ext4
+  - src: /dev/sdb1
+    target: /data
+    fstype: xfs
+            </pre>
+        </li>
+    </ul>
+    <div class="tip">
+        <b>Tip:</b> Use code editors like VS Code or PyCharm that support YAML syntax highlighting and linting for faster error detection.
+    </div>
+    <p>
+        For more details, see <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html" target="_blank">Ansible Playbooks Introduction</a>.
+    </p>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Powered by Ansible Community
+</footer>
+</body>
+</html>

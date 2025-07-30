@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Mastering YAML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.5em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.4em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        blockquote {
+            border-left: 3px solid #cce6ff;
+            padding-left: 1em;
+            color: #234e70;
+            margin: 1.5em 0;
+            font-style: italic;
+            background: #f6faff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Mastering YAML</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module3" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What is YAML?</h2>
+    <p>
+        <strong>YAML</strong> (YAML Ain’t Markup Language) is a human-focused standard for structuring data, widely adopted for configuration files and programmatic instructions such as <strong>Ansible playbooks</strong>. Its readability and simplicity make it a cornerstone of modern automation with Ansible.
+    </p>
+
+    <h2>2. Why YAML for Ansible?</h2>
+    <ul>
+        <li>Expressive, concise, and readable for declaring automation steps</li>
+        <li>Natively supports lists, maps, and complex nested data needed for configuring infrastructure</li>
+        <li>Designed to be easy for humans to write and review</li>
+        <li>Strict indentation and structure prevent ambiguity or confusion</li>
+    </ul>
+    <div class="tip">In Ansible, nearly all playbooks, variable files, roles, and even dynamic inventories use YAML.</div>
+
+    <h2>3. YAML Syntax: Core Rules</h2>
+    <ul>
+        <li>Use <b>spaces only</b> (never tabs) for indentation; the standard is 2 spaces per level.</li>
+        <li>Key/value pairs: <code>key: value</code></li>
+        <li>Lists: prefix items with a dash and space <code>-</code></li>
+        <li>Documents often start with <code>---</code> (good practice for multi-document or clarity)</li>
+        <li><b>Comments</b> start with <code>#</code> and run to the end of the line.</li>
+    </ul>
+
+    <h3>Example: Basic Playbook Structure</h3>
+    <pre>
+---
+- name: Install Apache web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install apache2
+      apt:
+        name: apache2
+        state: present
+    - name: Start Apache service
+      service:
+        name: apache2
+        state: started
+    </pre>
+    <blockquote>
+        This playbook targets the inventory group <code>webservers</code>, ensures the Apache package is installed and the service is started.
+    </blockquote>
+
+    <h2>4. YAML Data Types in Practice</h2>
+    <table>
+        <thead>
+            <tr>
+              <th>Type</th><th>Syntax</th><th>Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>String</td><td><code>key: value</code></td><td><code>owner: root</code></td></tr>
+            <tr><td>Boolean</td><td><code>key: true/false</code></td><td><code>reboot: false</code></td></tr>
+            <tr><td>Integer</td><td><code>key: 80</code></td><td><code>port: 8080</code></td></tr>
+            <tr>
+                <td>List (array)</td>
+                <td>
+                    <code>key:</code><br>
+                    <code>&nbsp; - item1</code><br>
+                    <code>&nbsp; - item2</code>
+                </td>
+                <td>
+                    <code>
+pkgs:<br>  - nginx<br>  - htop
+                    </code>
+                </td>
+            </tr>
+            <tr>
+                <td>Dictionary (map)</td>
+                <td>
+                    <code>key:</code><br>
+                    <code>&nbsp; subkey1: value1</code><br>
+                    <code>&nbsp; subkey2: value2</code>
+                </td>
+                <td>
+                    <code>
+user:<br>  name: alice<br>  uid: 1001
+                    </code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>5. Nested Structures</h2>
+    <h4>List of dictionaries (very common in Ansible tasks):</h4>
+    <pre>
+users:
+  - name: alice
+    groups:
+      - sudo
+      - wheel
+    state: present
+  - name: bob
+    groups:
+      - users
+    state: absent
+    </pre>
+    <p>
+        In this example, <strong>users</strong> is a list, each entry is a dictionary with keys (<code>name, groups, state</code>).
+    </p>
+
+    <h4>Dictionary containing lists:</h4>
+    <pre>
+webserver_config:
+  ports: [80, 443]
+  docroots:
+    - /var/www/html
+    - /srv/sites
+    </pre>
+
+    <h2>6. Multi-line Strings and Special Values</h2>
+    <ul>
+        <li><code>|</code> <b>(Literal style):</b> preserves line breaks exactly</li>
+        <li><code>&gt;</code> <b>(Folded style):</b> turns newlines into spaces (paragraphs)</li>
+    </ul>
+    <pre>
+motd: |
+  Welcome to our server!
+  All actions are monitored.
+
+notification: >
+  Please check your email
+  for system updates.
+    </pre>
+    <p>
+        <strong>Result:</strong><br>
+        <b>motd</b> will have two lines. <b>notification</b> will be a single line with a space instead of newline.
+    </p>
+
+    <h2>7. Quotations in YAML</h2>
+    <ul>
+        <li>Quotes (<code>" "</code> or <code>' '</code>) are generally optional for strings.</li>
+        <li>Use quotes if the string includes special characters (colons, #, !, @), leading zeros, or spaces at the end or start.</li>
+        <li>Escape double quotes inside double-quoted strings with <code>\"</code>.</li>
+    </ul>
+    <pre>
+# Quotes needed for leading zero:
+city_code: "0123"
+# Quotes for characters:
+description: "User: admin #1"
+# No quotes needed:
+server: server01
+    </pre>
+
+    <h2>8. YAML Anchors and Aliases (DRY Principle)</h2>
+    <p>
+        YAML supports "anchors" and "aliases" for repeating content without duplication. This is powerful for default settings and shared blocks.
+    </p>
+    <pre>
+base_defaults: &default_settings
+  retries: 3
+  timeout: 30
+
+prod_server:
+  <<: *default_settings
+  host: prod.example.com
+  retries: 5   # Overrides anchor
+    </pre>
+    <p>
+        The <code>prod_server</code> inherits <code>retries</code> and <code>timeout</code> from <code>base_defaults</code>, but can override them.
+    </p>
+    <div class="tip">Anchors are helpful for large, repetitive playbooks and roles.</div>
+
+    <h2>9. Complete Playbook Examples With Explanations</h2>
+    <h3>Basic Playbook: Install and Start Nginx</h3>
+    <pre>
+---
+- name: Install and configure nginx
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx package
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+    </pre>
+    <blockquote>
+        This playbook targets all hosts in the <b>web</b> group, installs nginx using the <code>apt</code> module (for Debian/Ubuntu), and ensures the service is running with the <code>service</code> module.
+    </blockquote>
+
+    <h3>Intermediate Playbook: Templating and Variables</h3>
+    <pre>
+---
+- name: Deploy customized welcome page
+  hosts: web
+  become: yes
+  vars:
+    welcome_message: "Welcome to {{ inventory_hostname }}"
+  tasks:
+    - name: Copy custom index.html
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          &lt;h1&gt;{{ welcome_message }}&lt;/h1&gt;
+          &lt;p&gt;Contact admin@example.com if you see this message.&lt;/p&gt;
+    </pre>
+    <blockquote>
+        <b>Explanation:</b>
+        <ul>
+           <li>Defines a variable <code>welcome_message</code> using Jinja2 template.</li>
+           <li>The <code>copy</code> task writes a dynamic HTML file with this message for each server.</li>
+        </ul>
+    </blockquote>
+
+    <h3>Advanced Playbook: Loops, Handlers, and When Clauses</h3>
+    <pre>
+---
+- name: Install multiple packages and configure firewall
+  hosts: all
+  become: yes
+  vars:
+    packages:
+      - nginx
+      - htop
+      - git
+    http_port: 80
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+
+    - name: Open firewall for HTTP
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Ensure nginx is started
+      service:
+        name: nginx
+        state: started
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+    </pre>
+    <blockquote>
+        <strong>Explanation:</strong>
+        <ul>
+            <li>Uses a <code>loop</code> for package installation over a variable list</li>
+            <li>Opens port 80 with UFW <code>when</code> (conditional on OS family)</li>
+            <li>Defines a handler: <code>Reload nginx</code> is run if the notified task changes (idempotence)</li>
+        </ul>
+    </blockquote>
+
+    <h2>10. Common YAML Pitfalls in Ansible</h2>
+    <ul>
+        <li><b>Tabs</b> instead of spaces cause parser errors!</li>
+        <li>Misaligned lists or missing indentation</li>
+        <li>Forgetting <code>:</code> after a key</li>
+        <li>Unquoted special characters in values</li>
+        <li>Incorrectly nested dictionaries inside lists or vice versa</li>
+    </ul>
+    <div class="warn">
+        <strong>Troubleshooting Tips</strong>
+        <ul>
+            <li>Use <b>yamllint</b> (CLI or <a href="https://yamllint.com" target="_blank">online</a>) for validation</li>
+            <li>Check indentation first (2 spaces recommended)</li>
+            <li>If using variables, ensure they’re wrapped in <code>{{ ... }}</code> </li>
+            <li>For complex files, comment out sections and add back step by step</li>
+        </ul>
+    </div>
+
+    <h2>11. YAML Best Practices for Ansible</h2>
+    <ul>
+        <li>Use consistent 2-space indentation</li>
+        <li>Add comments to document complex logic (<code>#</code>)</li>
+        <li>Group tasks logically and use meaningful names</li>
+        <li>Rely on anchors and aliases for common data</li>
+        <li>Keep playbooks modular—break out variables, handlers, and templates</li>
+        <li>Keep lines under 80–100 characters when possible</li>
+        <li>Stick with lowercase filenames and keys unless required otherwise</li>
+    </ul>
+
+    <h2>12. Key Resources</h2>
+    <ul>
+        <li><a href="https://yaml.org/spec/1.2/spec.html" target="_blank">YAML Official Spec</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html" target="_blank">Ansible YAML Syntax</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html" target="_blank">Ansible Playbooks Introduction</a></li>
+        <li><a href="https://www.yamllint.com/" target="_blank">Yamllint - Online YAML checker</a></li>
+        <li><a href="https://www.learnbyexample.org/python-yaml-json/" target="_blank">YAML - Learn By Example</a></li>
+    </ul>
+
+    <div class="tip">
+        <strong>Pro Tip:</strong> Once you master YAML, you unlock the full power of declarative infrastructure in Ansible, Kubernetes, CI/CD pipelines, and much more.
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; YAML Mastery
+</footer>
+</body>
+</html>

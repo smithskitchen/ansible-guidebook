@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Advanced Variables &amp; Fact Gathering</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Advanced Variables &amp; Fact Gathering</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module9" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Host, Group, and Global Variables</h2>
+    <p>
+        Variables are Ansible’s backbone for customization, making playbooks powerful, DRY, and adaptable to any environment.
+    </p>
+    <table>
+        <tr>
+            <th>Scope</th><th>Definition Location</th><th>Reference Example</th>
+        </tr>
+        <tr>
+            <td>Host variable</td>
+            <td><code>host_vars/&lt;hostname&gt;.yaml</code> or in inventory:</td>
+            <td><code>ansible_host: 192.168.1.10</code></td>
+        </tr>
+        <tr>
+            <td>Group variable</td>
+            <td><code>group_vars/&lt;groupname&gt;.yaml</code> or in inventory:</td>
+            <td><code>ntp_server: pool.ntp.org</code></td>
+        </tr>
+        <tr>
+            <td>Global variable</td>
+            <td><code>group_vars/all.yaml</code> or <code>all:vars</code> in inventory:</td>
+            <td><code>timezone: UTC</code></td>
+        </tr>
+    </table>
+    <div class="diagram">
+        <svg width="85%" height="125">
+            <rect x="30" y="30" width="120" height="52" rx="14" fill="#e2fae0" stroke="#43a96c"/>
+            <text x="48" y="62" font-size="17" fill="#34a44b" font-weight="bold">Inventory</text>
+            <rect x="210" y="12" width="155" height="30" rx="8" fill="#e0e8fc" stroke="#3e69b1"/>
+            <rect x="210" y="54" width="155" height="30" rx="8" fill="#fff3cf" stroke="#ffcc2e"/>
+            <rect x="410" y="35" width="140" height="70" rx="12" fill="#e0fae9" stroke="#43a96c"/>
+            <text x="240" y="32" font-size="14" fill="#2c4b87">group_vars/</text>
+            <text x="240" y="74" font-size="14" fill="#b3901e">host_vars/</text>
+            <text x="444" y="58" font-size="15" fill="#34a44b">Playbook/Task</text>
+            <line x1="150" y1="56" x2="210" y2="27" stroke="#3e69b1" stroke-width="3" marker-end="url(#arrowv1)"/>
+            <line x1="150" y1="56" x2="210" y2="69" stroke="#ffcc2e" stroke-width="3" marker-end="url(#arrowv2)"/>
+            <line x1="365" y1="27" x2="410" y2="60" stroke="#43a96c" stroke-width="3" marker-end="url(#arrowv3)"/>
+            <line x1="365" y1="84" x2="410" y2="70" stroke="#43a96c" stroke-width="3" marker-end="url(#arrowv3)"/>
+            <defs>
+                <marker id="arrowv1" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#3e69b1"/>
+                </marker>
+                <marker id="arrowv2" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#ffcc2e"/>
+                </marker>
+                <marker id="arrowv3" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#43a96c"/>
+                </marker>
+            </defs>
+        </svg>
+        <span style="font-size:1.01em;color:#234e70;">
+            Host, group, and all/global variables flow naturally from inventory or special directories.
+        </span>
+    </div>
+    <h3>Examples and Patterns</h3>
+    <pre>
+# inventory file (INI)
+[db]
+db1 ansible_host=10.0.2.7 db_port=5432
+
+[web:vars]
+web_port=80
+
+[all:vars]
+timezone=UTC
+    </pre>
+    <pre>
+# group_vars/web.yaml
+web_port: 8080
+    </pre>
+    <pre>
+# host_vars/db1.yaml
+ansible_host: 10.0.2.7
+db_port: 5432
+db_password: "{{ vault_db_password }}"
+    </pre>
+    <blockquote>
+        <b>Best Practice:</b> Use <code>group_vars/</code> and <code>host_vars/</code> for large/multi-env projects—keeps playbooks clean!
+    </blockquote>
+    
+    <h2>2. Ansible Variable Precedence and Merging</h2>
+    <ol>
+        <li>Extra vars (<code>-e</code> on CLI)</li>
+        <li>Play vars</li>
+        <li>Task vars (including set_fact)</li>
+        <li>Host vars / Group vars</li>
+        <li>Inventory vars</li>
+        <li>Role defaults</li>
+    </ol>
+    <p>
+        <strong>Higher wins!</strong> The closer the variable is defined to the play/task, the more it overrides everything "further away."
+    </p>
+    
+    <h3>Variable Merging (YAML Dictionaries)</h3>
+    <p>
+        When using group_vars/all.yaml and group_vars/web.yaml, dictionaries (lists and dictionaries, not scalars) are merged by default
+        (unless <code>ANSIBLE_MERGE_VARS_START</code> is set or <code>merge: no</code> in Ansible config).
+    </p>
+    
+    <h2>3. Ansible Vault: Secret/Encrypted Variables</h2>
+    <h3>What is Ansible Vault?</h3>
+    <p>
+        <b>Ansible Vault</b> encrypts any YAML file (or the values in it), so you can safely keep secrets (passwords, keys, API tokens, etc.) in version control and automation workflows.
+    </p>
+    <h3>Basic Vault Commands</h3>
+    <ul>
+        <li><code>ansible-vault create secrets.yaml</code></li>
+        <li><code>ansible-vault edit secrets.yaml</code></li>
+        <li><code>ansible-vault encrypt group_vars/db.yaml</code></li>
+        <li><code>ansible-vault view secrets.yaml</code></li>
+        <li><code>ansible-vault rekey secrets.yaml</code></li>
+    </ul>
+    <div class="tip">
+        <b>Pro tips:</b> 
+        <ul>
+            <li>Use <code>--ask-vault-pass</code> or <code>--vault-password-file</code> to automate</li>
+            <li>Can encrypt just the value (with <code>!vault</code> blocks) or the whole file</li>
+        </ul>
+    </div>
+    <h3>Encrypted Variable Example</h3>
+    <pre>
+# group_vars/db.yaml (encrypted)
+db_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          6334656235363563...
+    </pre>
+    <h3>Encrypt a Specific Variable/Variable File (Hands-on)</h3>
+    <ol>
+        <li>
+            <strong>Create an encrypted file for secrets:</strong>
+            <pre>ansible-vault create group_vars/all/vault.yaml</pre>
+        </li>
+        <li>
+            <strong>Edit <code>vault.yaml</code> to store your database password securely:</strong>
+            <pre>db_password: SuperSecret123</pre>
+        </li>
+        <li>
+            <strong>Reference the variable in playbooks/<code>group_vars</code>:</strong>
+            <pre>
+tasks:
+  - name: Print db password (for test - avoid in prod!)
+    debug:
+      var: db_password
+            </pre>
+        </li>
+        <li>
+            <strong>Run playbook with vault password:</strong>
+            <pre>ansible-playbook site.yaml --ask-vault-pass</pre>
+        </li>
+    </ol>
+    <blockquote>
+        <strong>WARNING:</strong> Never print secrets in plaintext in CI/CD logs, tests, or output.
+    </blockquote>
+    
+    <h3>Vault for Entire Inventory File or Vars Section</h3>
+    <pre>
+ansible-vault encrypt group_vars/prod.yaml
+    </pre>
+    <p>
+        Now, all variables in prod.yaml are protected and require password at runtime!
+    </p>
+
+    <h2>4. Fact Gathering: The Power of Dynamic Information</h2>
+    <h3>What are Ansible Facts?</h3>
+    <ul>
+        <li>Facts are bits of data (host OS, IPs, CPU, memory, cloud info, custom tags, etc) that Ansible collects automatically from each host at the start of a playbook (by <code>setup</code> module).</li>
+    </ul>
+    <pre>
+# See all facts for a host:
+ansible all -m setup
+    </pre>
+    <p>
+        <b>Common facts:</b> <code>ansible_facts['os_family']</code>, <code>ansible_facts['distribution']</code>, <code>ansible_facts['fqdn']</code>, <code>ansible_default_ipv4.address</code>, <code>ansible_memtotal_mb</code>
+    </p>
+    <ul>
+        <li>Use facts in playbooks/roles just like any variable!</li>
+        <li>You can gather only required facts (for speed) or <code>gather_facts: false</code> to disable.</li>
+    </ul>
+    <h3>Example: Using Facts</h3>
+    <pre>
+- hosts: all
+  tasks:
+    - debug:
+        msg: "This is running on {{ ansible_facts['os_family'] }} host with IP {{ ansible_default_ipv4.address }}"
+    </pre>
+    <h4>Gathering Subsets (for speed):</h4>
+    <pre>
+- hosts: all
+  gather_facts: yes
+  fact_path: setup
+  tasks:
+    - setup:
+        gather_subset:
+          - network
+          - hardware
+    </pre>
+    
+    <h2>5. Advanced: Custom Facts</h2>
+    <h3>What Are Custom Facts?</h3>
+    <ul>
+        <li>You can define <b>your own facts</b> by putting .fact files in <code>/etc/ansible/facts.d/</code> on managed hosts (JSON, INI, or executable scripts that return JSON), or add them dynamically via <code>set_fact</code>.</li>
+    </ul>
+    <h4>Static Custom Fact Example</h4>
+    <pre>
+# On managed host, create /etc/ansible/facts.d/custom.fact (INI or JSON format):
+[myfacts]
+env_type=staging
+region=us-west
+
+# Or JSON:
+{
+  "env_type": "production",
+  "region": "eu-north"
+}
+    </pre>
+    <p>
+        These are then accessible as <code>ansible_facts['myfacts']['env_type']</code> or <code>ansible_local.myfacts.env_type</code> in playbooks.
+    </p>
+    <h4>Dynamic Custom Facts Example (<code>set_fact</code>)</h4>
+    <pre>
+- hosts: all
+  tasks:
+    - set_fact:
+        custom_version: "v2.1.3"
+    - debug:
+        var: custom_version
+    </pre>
+    <h4>Scripted Custom Fact Example</h4>
+    <pre>
+# /etc/ansible/facts.d/env.sh (on the managed node):
+#!/bin/sh
+echo '{"tier": "frontend", "customer": "widgetco"}'
+    </pre>
+    <blockquote>
+        Facts can be used to drive config, select roles, or control playbook logic per host or environment.
+    </blockquote>
+
+    <h2>6. Practical Exercises</h2>
+    <h3>Encrypt DB Passwords with Ansible Vault</h3>
+    <ol>
+        <li>Create a vault file: <pre>ansible-vault create group_vars/all/vault.yaml</pre></li>
+        <li>Add: <pre>db_password: MySecretP@ss123</pre></li>
+        <li>Reference in your playbook vars: <pre>vars_files: [ group_vars/all/vault.yaml ]</pre></li>
+        <li>Use in task:<pre>
+- name: Use DB password
+  debug:
+    msg: "Database pass is {{ db_password }}"
+            </pre></li>
+        <li>Run: <pre>ansible-playbook dbtest.yml --ask-vault-pass</pre></li>
+    </ol>
+    <h3>Use Custom Facts for Host-Specific Config</h3>
+    <ol>
+        <li>On each managed host, add a file to <code>/etc/ansible/facts.d/</code>, e.g. <code>env.fact</code>:
+<pre>
+[custom]
+env=dev
+role=web
+</pre></li>
+        <li>In playbooks, refer to them as:
+<pre>
+ansible_local.custom.env
+</pre></li>
+        <li>Example use in a play:
+<pre>
+- hosts: all
+  tasks:
+    - debug:
+        msg: "This host is in the {{ ansible_local.custom.env }} environment."
+</pre></li>
+    </ol>
+
+    <h2>7. Best Practices &amp; Troubleshooting</h2>
+    <ul>
+        <li>Use <code>group_vars/all.yaml</code> for truly global values (timezone, common endpoints)</li>
+        <li>Avoid secret/production data in plaintext YAML or inventories—encrypt with Vault or store outside the repo</li>
+        <li>Use facts for OS, location, disk, IP, and hardware details to make roles/playbooks adaptive</li>
+        <li>Keep <code>group_vars</code> and <code>host_vars</code> well-named and organized to prevent conflicts</li>
+        <li>Use <code>set_fact</code> only for values generated during playbook execution</li>
+        <li>Test variables and facts with <code>ansible all -m setup</code> and <code>ansible-playbook ... --check</code></li>
+    </ul>
+    <div class="warn">
+        <b>Troubleshooting:</b>
+        <ul>
+            <li>Variable not found? Double-check naming, spelling, and scoping (vars, host_vars, group_vars, play-level, etc.)</li>
+            <li>Vault error? Wrong password, forgotten to include <code>--ask-vault-pass</code> or <code>vars_files</code></li>
+            <li>Custom fact missing? Remote <code>facts.d</code> file may be missing, unparseable, or unreachable</li>
+        </ul>
+    </div>
+
+    <h2>8. References &amp; Further Reading</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html" target="_blank">Ansible Variables User Guide</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_vault.html" target="_blank">Ansible Vault</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html" target="_blank">Facts in Playbooks</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/set_fact_module.html" target="_blank">set_fact module</a></li>
+    </ul>
+    <div class="tip">
+        <b>
+        Learn variable scoping and secrets management, and you'll never need to hardcode or leak credentials, keys, or deployment logic again!
+        </b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Advanced Variables &amp; Fact Gathering
+</footer>
+</body>
+</html>

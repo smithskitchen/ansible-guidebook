@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Testing &amp; CI/CD Integration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Testing &amp; CI/CD Integration</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module11" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Why Test Ansible Content?</h2>
+    <ul>
+        <li>Detect regressions and errors <strong>before</strong> they affect critical systems</li>
+        <li>Support continuous improvement and automated code review (CI/CD)</li>
+        <li>Encourage modular, reusable, and production-safe playbooks and roles</li>
+        <li>Enable collaborative development and security compliance</li>
+    </ul>
+<div class="diagram">
+<svg width="720" height="80">
+  <!-- Step 1 -->
+  <rect x="20" y="20" rx="13" ry="13" width="195" height="44"
+        fill="#eaf6fd" stroke="#2288bb" stroke-width="2"/>
+  <text x="38" y="48" font-size="16.5" font-family="Segoe UI,Arial"
+        fill="#1875ad" font-weight="bold">
+    Author Playbook/Role
+  </text>
+  <!-- Dashes between Step 1 and 2 -->
+  <line x1="215" y1="42" x2="254" y2="42" stroke="#65c36e"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <!-- Small > after first dashes -->
+  <text x="257" y="48" font-size="19" font-family="Segoe UI,Arial" fill="#32a852">&gt;</text>
+  <!-- Step 2 -->
+  <rect x="270" y="20" rx="13" ry="13" width="195" height="44"
+        fill="#e3fde5" stroke="#4abb46" stroke-width="2"/>
+  <text x="282" y="48" font-size="16.5" font-family="Segoe UI,Arial"
+        fill="#3bad3a" font-weight="bold">
+    Test (Linter, Molecule)
+  </text>
+  <!-- Dashes between Step 2 and 3 -->
+  <line x1="465" y1="42" x2="504" y2="42" stroke="#ddb054"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <!-- Small > after second dashes -->
+  <text x="507" y="48" font-size="19" font-family="Segoe UI,Arial" fill="#ddb054">&gt;</text>
+  <!-- Step 3 -->
+  <rect x="520" y="20" rx="13" ry="13" width="180" height="44"
+        fill="#fff7df" stroke="#d2ae48" stroke-width="2"/>
+  <text x="538" y="48" font-size="16.5" font-family="Segoe UI,Arial"
+        fill="#be972c" font-weight="bold">
+    CI/CD Integration
+  </text>
+</svg>
+<br>
+<span style="font-size:1.04em;color:#234e70;">
+    Pro workflows lint, test, and <b>integrate Ansible with CI/CD</b> upon each change or deployment.
+</span>
+</div>
+
+    <h2>2. Testing with Molecule</h2>
+    <p>
+        <b>Molecule</b> is the de-facto tool for testing Ansible roles (and, increasingly, collections and playbooks too).
+        It provides a workflow for:
+    </p>
+    <ul>
+        <li>Creating clean test environments (via Docker, Vagrant, podman, etc.)</li>
+        <li>Running playbooks/roles repeatedly</li>
+        <li>Testing results (idempotency, state validation, Linux commands, etc.)</li>
+        <li>Destroying environment for repeatability</li>
+    </ul>
+    <h3>Install and Init</h3>
+    <ol>
+        <li>
+            <b>Install Molecule (and Docker driver):</b>
+            <pre>pip install molecule[docker]</pre>
+        </li>
+        <li>
+            <b>Initialize in a role directory:</b>
+            <pre>cd roles/myrole
+molecule init scenario -r myrole -d docker
+molecule create
+molecule converge
+            </pre>
+            <ul>
+                <li><code>molecule create</code> brings up a container/VM for testing</li>
+                <li><code>molecule converge</code> applies your role/playbook</li>
+            </ul>
+        </li>
+    </ol>
+    <h3>Writing Molecule Tests</h3>
+    <ul>
+        <li>Tests can be simple YAML assertions (in <code>molecule/default/verify.yml</code>), or use <code>testinfra</code> (Python) for more advanced logic</li>
+        <li>The workflow typically is: 
+            <ul>
+                <li>Create instance</li>
+                <li>Converge (run the playbook/role)</li>
+                <li>Verify</li>
+                <li>Destroy</li>
+            </ul>
+        </li>
+    </ul>
+    <pre>
+# Example: verify.yml
+---
+- name: Verify Apache running
+  hosts: all
+  tasks:
+    - name: Ensure httpd service is running
+      ansible.builtin.service:
+        name: httpd
+        state: started
+    </pre>
+    <blockquote>
+        For more complex asserts, use <code>assert</code> module or <a href="https://testinfra.readthedocs.io/en/latest/" target="_blank">Testinfra</a> for Pythonic tests!
+    </blockquote>
+    <div class="tip">
+        <b>Molecule is a must</b> for open source roles, production change review, and collaborative projects!
+    </div>
+
+    <h2>3. Ansible Linting and Static Analysis</h2>
+    <h3>ansible-lint</h3>
+    <ul>
+        <li>Checks your playbooks, roles, and vars for common errors and best practices</li>
+        <li>Supports custom rule sets</li>
+        <li>Recommended <strong>in all automation pipelines</strong></li>
+    </ul>
+    <pre>
+pip install ansible-lint
+ansible-lint myplaybook.yml
+    </pre>
+
+    <h2>4. Integrating with CI/CD: Jenkins, GitHub Actions, GitLab CI, etc.</h2>
+    <ul>
+        <li>CI ensures all tests run on <b>every push</b>, PR, or merge—constantly validating every code change</li>
+        <li>Popular with Jenkins, GitHub Actions, GitLab CI/CD, Azure Pipelines, etc.</li>
+        <li>Enables:
+            <ul>
+                <li>Linting/validation</li>
+                <li>Molecule tests</li>
+                <li>Automated playbook runs to validate syntax/idempotence</li>
+                <li>Triggering production deploys (with approvals)</li>
+            </ul>
+        </li>
+    </ul>
+    <h3>General Workflow</h3>
+    <ol>
+        <li>Push change/commit PR to repo</li>
+        <li>CI launches (lint, test, molecule, syntax check)</li>
+        <li>Failure: Notify, block merge</li>
+        <li>Success: Allow merge, optionally auto-deploy</li>
+    </ol>
+    <div class="tip">
+        <strong>Always</strong> test and lint your Ansible before running in prod!  
+        (You can even use check mode: <code>ansible-playbook --check --diff myplaybook.yml</code>)
+    </div>
+
+    <h2>5. Practical Exercise: GitHub Actions for Ansible CI</h2>
+    <h3>Why?</h3>
+    <ul>
+        <li>Free/cheap, powerful, integrated, and supports matrix testing on multiple OSes!</li>
+        <li>Easy setup, broad community support, and templated actions for Ansible, Molecule, Lint</li>
+    </ul>
+    <h3>Step-by-Step Example</h3>
+    <ol>
+        <li><strong>In your role or playbook repo, create <code>.github/workflows/ansible-ci.yml</code>:</strong>
+<pre>
+name: Ansible CI
+
+on:
+  push:
+    paths:
+      - '**.yml'
+      - '**.yaml'
+      - 'roles/**'
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Ansible and Lint
+        run: |
+          pip install ansible ansible-lint molecule[docker]
+      - name: Run ansible-lint
+        run: ansible-lint .
+      - name: Molecule test (if role)
+        working-directory: roles/myrole
+        run: |
+          molecule test
+</pre>
+        </li>
+        <li>
+            <strong>Commit and push.</strong> On each push or PR, linting (and Molecule, if defined) run automatically.
+        </li>
+        <li>
+            <strong>Read/test output under the "Actions" tab in your GitHub repo.</strong>
+        </li>
+    </ol>
+    <blockquote>
+        <b>You can run Molecule and Lint in other CI systems with nearly the same steps—simply script in your Jenkinsfile, .gitlab-ci.yml, or pipeline config!</b>
+    </blockquote>
+
+    <h2>6. Triggering Playbook Deploys from CI Commits</h2>
+    <ol>
+        <li>Add a deployment job/stage to your workflow, gated by branch, tag, PR approval, or environment approval.</li>
+        <li>Use secrets/GitHub environment or service account tokens to allow automated playbook runs vs. real targets.</li>
+        <li>Example (append to <code>ansible-ci.yml</code>):
+<pre>
+  deploy:
+    runs-on: ubuntu-latest
+    needs: lint
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Ansible
+        run: pip install ansible
+      - name: Run Playbook (Staging)
+        run: ansible-playbook -i inventories/staging.yml playbook.yml
+        env:
+          VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+</pre>
+        </li>
+    </ol>
+    <ul>
+        <li><b>Add deploy approvals or restrict to main branch/PR merges for safety.</b></li>
+    </ul>
+
+    <h2>7. Best Practices &amp; Troubleshooting</h2>
+    <ul>
+        <li>Automate all testing and linting—never trust human manual QA alone</li>
+        <li>Write Molecule scenarios for all published roles; add <code>converge</code>, <code>verify</code>, <code>idempotence</code> checks</li>
+        <li>Keep tests <b>separate</b> for different OSes, drivers (Docker, Vagrant, cloud, etc)</li>
+        <li>Use role meta and badges to show CI/test status/coverage</li>
+        <li>Pin dependency versions in <code>requirements.yml</code> for CI reproducibility</li>
+    </ul>
+    <div class="warn">
+        <b>Troubleshooting:</b>
+        <ul>
+            <li>Tests fail on Docker driver due to systemd or privileged mode? Switch to podman, VM, or cloud drivers.</li>
+            <li>Errors in "lint": Check YAML syntax, indentation, and import paths.</li>
+            <li>GitHub Actions: Ensure secrets and matrix jobs match your real deployment requirements; debug with "printenv" or "echo $VAR".</li>
+        </ul>
+    </div>
+
+    <h2>8. References &amp; Further Reading</h2>
+    <ul>
+        <li><a href="https://molecule.readthedocs.io/en/latest/" target="_blank">Molecule Documentation</a></li>
+        <li><a href="https://ansible-lint.readthedocs.io/en/latest/" target="_blank">ansible-lint</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/dev_guide/testing_integration.html" target="_blank">Ansible Testing &amp; Test Frameworks</a></li>
+        <li><a href="https://github.com/marketplace/actions/github-actions-for-ansible" target="_blank">GitHub Actions for Ansible</a></li>
+        <li><a href="https://docs.github.com/en/actions/using-workflows" target="_blank">GitHub Actions Workflow Docs</a></li>
+    </ul>
+    <div class="tip">
+        <b>
+        Integrate Molecule, linting, and CI/CD to enforce code quality, prevent regressions, and build truly reliable Ansible automation!
+        </b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Testing &amp; CI/CD Integration
+</footer>
+</body>
+</html>

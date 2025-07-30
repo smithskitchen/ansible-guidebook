@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Project: Global On-Prem Patching via patchy.sh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 60px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 1150px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.3em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.3em;
+            font-size: 1.08em;
+            color: #3d6ba7;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto 1em auto;
+            text-align: center;
+            padding: 8px 0 0.8em 0;
+            max-width: 1000px;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.4em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.1em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.3em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Project: Global On-Prem Server Patch Automation with patchy.sh</h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module15" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>Project Scope & Key Features</h2>
+    <ul>
+        <li>Patch all worldwide on-premise Red Hat (RHEL) servers per region, client group, and server type.</li>
+        <li>Use the standardized <code>/opt/patchy.sh</code> script present on all servers for patching.</li>
+        <li>Organize servers by <b>region</b> (US, AUS, EU, SAUDI), by <b>client</b> (10+ per region), and by <b>role</b> (web, app, middleware, db).</li>
+        <li>Leverage Ansible playbooks, templates, vault, dynamic/grouped repository inventories, notifications, and CI/CD.</li>
+        <li>Enable RBAC, audit, and compliance via AWX/Tower or GitHub Actions.</li>
+    </ul>
+
+    <div class="diagram">
+<svg width="1080" height="150">
+  <rect x="15" y="60" rx="13" ry="13" width="110" height="40"
+        fill="#eaf6fd" stroke="#2288bb" stroke-width="2"/>
+  <text x="35" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#1875ad" font-weight="bold">
+    Inventory
+  </text>
+  <line x1="125" y1="80" x2="170" y2="80" stroke="#65c36e" stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="176" y="86" font-size="18" font-family="Segoe UI,Arial" fill="#32a852">&gt;</text>
+  <rect x="195" y="60" rx="13" ry="13" width="120" height="40"
+        fill="#e3fde5" stroke="#4abb46" stroke-width="2"/>
+  <text x="210" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#348e37" font-weight="bold">
+    Playbooks
+  </text>
+  <line x1="315" y1="80" x2="360" y2="80" stroke="#ddb054" stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="366" y="86" font-size="18" font-family="Segoe UI,Arial" fill="#ddb054">&gt;</text>
+  <rect x="390" y="60" rx="13" ry="13" width="90" height="40"
+        fill="#fdeacf" stroke="#d2ae48" stroke-width="2"/>
+  <text x="405" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#be972c" font-weight="bold">
+    Roles
+  </text>
+  <line x1="480" y1="80" x2="525" y2="80" stroke="#aac6da" stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="530" y="86" font-size="18" font-family="Segoe UI,Arial" fill="#aac6da">&gt;</text>
+  <rect x="560" y="60" rx="13" ry="13" width="135" height="40"
+        fill="#fff7df" stroke="#d2ae48" stroke-width="2"/>
+  <text x="577" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#be972c" font-weight="bold">
+    patchy.sh Exec
+  </text>
+  <line x1="695" y1="80" x2="745" y2="80" stroke="#d9329e" stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="750" y="86" font-size="18" font-family="Segoe UI,Arial" fill="#d9329e">&gt;</text>
+  <rect x="780" y="60" rx="13" ry="13" width="100" height="40"
+        fill="#e0fae9" stroke="#4abb46" stroke-width="2"/>
+  <text x="800" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#3bad3a" font-weight="bold">
+    Audit/Log
+  </text>
+  <line x1="880" y1="80" x2="930" y2="80" stroke="#0f7ff1" stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="935" y="86" font-size="18" font-family="Segoe UI,Arial" fill="#0f7ff1">&gt;</text>
+  <rect x="970" y="60" rx="13" ry="13" width="95" height="40"
+        fill="#f7fed9" stroke="#a0c813" stroke-width="2"/>
+  <text x="982" y="87" font-size="15" font-family="Segoe UI,Arial"
+        fill="#a0c813" font-weight="bold">
+    AWX/CI/CD
+  </text>
+</svg>
+<br>
+<span style="font-size:1.05em;color:#234e70;">
+     Orchestrate patching, logging, and auditing worldwide using Ansible, templates, RBAC, secrets, and CI/CD.
+</span>
+</div>
+    <h2>Project Directory Structure</h2>
+    <pre>
+patchy-patching/
+  inventories/
+    prod.yaml
+    aus.yaml
+    eu.yaml
+    saudi.yaml
+  group_vars/
+    all.yaml
+    us.yaml
+    aus.yaml
+    eu.yaml
+    saudi.yaml
+  host_vars/
+    us-client1-web01.yaml
+    aus-client2-db01.yaml
+    # ...host-level overrides if needed
+  roles/
+    patchy/
+    verify/
+    notify/
+  playbooks/
+    patch_all.yml
+    patch_group.yml
+    validate_patch.yml
+  templates/
+    notify_email.j2
+  vault/
+    us-secrets.yaml
+    eu-secrets.yaml
+  .github/
+    workflows/patch-ci.yml
+  docs/
+    README.md
+  files/
+    sample_patchy_out.txt
+    </pre>
+
+    <h2>Typical Inventory Sample (inventories/prod.yaml)</h2>
+    <pre>
+all:
+  children:
+    US:
+      children:
+        us_client1:
+          hosts:
+            us-client1-web01:
+            us-client1-app01:
+            us-client1-db01:
+          vars:
+            app_type: web
+        us_client2:
+          hosts:
+            us-client2-web01:
+            us-client2-db01:
+    AUS:
+      children:
+        aus_client1:
+          hosts:
+            aus-client1-web01:
+            aus-client1-app01:
+            aus-client1-db01:
+        aus_client2:
+          hosts:
+            aus-client2-web01:
+            aus-client2-db01:
+    EU:
+      children:
+        eu_client1:
+          hosts:
+            eu-client1-web01:
+            eu-client1-db01:
+    SAUDI:
+      # ... etc for each region/client
+  vars:
+    ansible_user: ansadmin
+    ansible_ssh_private_key_file: ~/.ssh/sa-key.pem
+    ansible_port: 22
+    </pre>
+
+    <h2>Sample group_vars/all.yaml</h2>
+    <pre>
+patchy_script: /opt/patchy.sh
+patch_window: "Sat 02:00"
+mail_to: "ops@example.com"
+    </pre>
+
+    <h2>Sample playbooks/patch_all.yml</h2>
+    <pre>
+- name: Global Patch Orchestration
+  hosts: all
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: patchy
+    - role: notify
+    </pre>
+
+    <h2>roles/patchy/tasks/main.yml</h2>
+    <pre>
+- name: Check patch window (optional)
+  debug:
+    msg: "Patching skipped - not in patch window"
+  when: patch_window not in ansible_date_time.date + " " + ansible_date_time.time
+  tags: window
+
+- name: Make patch script executable
+  file:
+    path: "{{ patchy_script }}"
+    mode: '0755'
+    state: file
+
+- name: Run patch script with log capture
+  shell: "{{ patchy_script }} > /tmp/patchy.log 2>&1"
+  register: patchy_result
+  failed_when: patchy_result.rc != 0
+  changed_when: "'Already up to date' not in patchy_result.stdout"
+  args:
+    executable: /bin/bash
+
+- name: Fetch patch logs for auditing
+  fetch:
+    src: /tmp/patchy.log
+    dest: files/{{ inventory_hostname }}_patchy.log
+    flat: yes
+    </pre>
+
+    <h2>roles/notify/tasks/main.yml</h2>
+    <pre>
+- name: Email patch result to global ops
+  mail:
+    host: smtp.example.com
+    port: 25
+    subject: "Patch Run - {{ inventory_hostname }}"
+    to: "{{ mail_to }}"
+    from: "patch-bot@example.com"
+    body: |
+      PATCH RESULT FOR: {{ inventory_hostname }}
+      ---
+
+      {{ patchy_result.stdout }}
+  delegate_to: localhost
+  when: patchy_result is defined
+    </pre>
+
+    <h2>Sample vault/us-secrets.yaml</h2>
+    <pre>
+smtp_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          424c58...
+patchy_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          6eff...
+    </pre>
+
+    <h2>templates/notify_email.j2</h2>
+    <pre>
+Subject: Patchy.sh Run on {{ inventory_hostname }}
+
+Patch Status:
+{{ patchy_result.stdout }}
+
+{% if patchy_result.failed %}
+  WARNING: The patch operation failed. Review the log!
+{% else %}
+  Patch was successful.
+{% endif %}
+    </pre>
+
+    <h2>.github/workflows/patch-ci.yml</h2>
+    <pre>
+name: Patch Lint and Simulation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ansible
+        run: pip install ansible ansible-lint
+      - name: Run Lint
+        run: ansible-lint playbooks/
+  dry-run:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ansible
+        run: pip install ansible
+      - name: Simulate Patch Playbook
+        run: ansible-playbook -i inventories/prod.yaml playbooks/patch_all.yml --check
+    </pre>
+
+    <h2>docs/README.md (excerpt)</h2>
+    <pre>
+# Global On-Prem Patching
+
+- Targets Redhat servers by region/client.
+- Executes /opt/patchy.sh everywhere; captures logs and status.
+- Notification to global ops and dashboards.
+- Secure vars and mail config in vault/encrypted files.
+- Orchestrated via AWX or GitHub CI/CD, RBAC enforced.
+    </pre>
+
+    <h2>Project Workflow: End-to-End</h2>
+    <ol>
+        <li><b>Inventory</b> lists all servers grouped by region, client, and server type, for flexible targeting.
+        </li>
+        <li><b>group_vars/</b> and <b>host_vars/</b> centrally define script paths, scheduling, email settings.
+        </li>
+        <li><b>Vault/</b> stores credentials and secrets (SMTP, tokens) per region.
+        </li>
+        <li><b>Playbook <code>patch_all.yml</code></b> calls the <b>patchy</b> role to execute <code>patchy.sh</code> in a scheduled/approved window;
+            role gathers logs and notifies ops (uses Jinja template if needed).
+        </li>
+        <li>CI pipeline on GitHub PR lints and dry-runs playbook to prevent errors before production.
+        </li>
+        <li><b>AWX/Tower</b> (or even a scheduled GitHub Action/cron) runs the playbook on a defined schedule or on-demand; RBAC controls
+            who can run or review jobs, with all actions logged for compliance.
+        </li>
+        <li>Audit logs (<code>patchy.log</code>) are fetched and can be integrated with SIEM or monitoring platforms.
+        </li>
+    </ol>
+    <blockquote>
+        <b>Result:</b> You have safe, auditable, region/client/role-aware patching for all servers—automated, reproducible, and fully integrated with modern DevOps and enterprise standards.
+    </blockquote>
+    <div class="tip">
+        <b>Want more?</b> Try hooks for ServiceNow ticketing, Slack API notifications, SIEM/ELK log streaming, advanced approval flows in AWX, or per-client "pause/abort" scheduling logic for real NOC governance.
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Global Patchy.sh Automation
+</footer>
+</body>
+</html>

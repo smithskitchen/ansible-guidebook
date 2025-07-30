@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Enterprise Patterns & Best Practices</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 55px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.35em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.4em;
+            font-size: 1.13em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 10px 0 0.5em 0;
+            max-width: 900px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Enterprise Patterns &amp; Best Practices</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module14" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Project Directory Structure for Large Teams</h2>
+    <p>
+        A robust directory structure is critical for scaling code, teams, and compliance. Here’s a strong starting point:
+    </p>
+
+    <h4>Recommended Directory Layout</h4>
+    <pre>
+company-ansible-repo/
+  inventories/           # prod, staging, dev, etc.
+  group_vars/            # group-level vars
+  host_vars/             # per-host secrets/config
+  roles/                 # reusable building blocks
+  playbooks/             # main.yml, deploy_app.yml, etc.
+  collections/           # requirements.yml, external content
+  vault/                 # encrypted files (Ansible Vault)
+  docs/                  # runbooks, architecture
+  .github/ [.gitlab-ci.yml, Jenkinsfile]  # CI/CD
+    </pre>
+
+    <h2>2. Large-Scale Playbooks & Role Patterns</h2>
+    <ul>
+        <li><b>Decompose</b> playbooks: One responsibility per play, structure as <code>site.yml</code> &rarr; <code>stack.yml</code> &rarr; <code>role</code></li>
+        <li><b>Role reuse:</b> Centralize shared logic (e.g. "users", "logrotate", "cloud-init"), override using group/host vars</li>
+        <li><b>Separate:</b> Inventory, secrets, templates for different business units or environments</li>
+        <li>Document intentions and change history (README, CHANGELOG in each role and playbook)</li>
+    </ul>
+    <h4>Example Enterprise Playbook Entry</h4>
+    <pre>
+- name: Company base server config
+  hosts: all
+  become: yes
+  roles:
+    - baseline
+    - security
+    - users
+    - { role: nginx, when: "'web' in group_names" }
+    - { role: mysql, when: "'db' in group_names" }
+    - custom_role
+    </pre>
+    <blockquote>
+        <b>Use inventories to assemble subsets:</b> e.g., deploy to just <code>prod</code> or <code>web</code> via inventory merging.
+    </blockquote>
+
+    <h2>3. Access Control, RBAC, and Secrets Management</h2>
+    <ul>
+        <li>
+            <b>RBAC (Role-based Access Control):</b>
+            <ul>
+                <li>Use AWX/Tower/Automation Controller or SCM permissions (branch, directory-level controls)</li>
+                <li>Set least-privilege on inventory, playbooks, and vault secrets</li>
+                <li>Create user/team mappings for CI/CD systems and restrict what gets triggered automatically</li>
+            </ul>
+        </li>
+        <li>
+            <b>Secrets Management:</b>
+            <ul>
+                <li>Use <code>ansible-vault</code> for YAML secrets files (passwords, keys, tokens)</li>
+                <li>Integrate external vaults (HashiCorp Vault, CyberArk, AWS Secrets, Azure Key Vault) via plugins/lookup</li>
+                <li>Restrict access to vault keys and enforce auditing</li>
+                <li>Do not store plaintext secrets in code or repos!</li>
+            </ul>
+        </li>
+    </ul>
+    <pre>
+# Example: vault_aws_prod.yaml (encrypted)
+aws_access_key_id: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          ...
+    </pre>
+    <blockquote>
+        <b>Tip:</b> Store different vault keys for prod/staging/dev, restrict decrypt access via file permissions and team policies.
+    </blockquote>
+
+    <h2>4. GitOps and Automation Integration</h2>
+    <ul>
+        <li>Store all infrastructure/code as code in Git (or equivalent)</li>
+        <li>Trigger code/automation on pull-request, merge, or approval</li>
+        <li>Enforce reviews (peer or automated), CI lints/tests all changes</li>
+        <li>Tag/audit production deploys for traceability/reproducibility</li>
+        <li>Tie to AWX/Controller for visibility, promotion, and scheduling</li>
+        <li>Keep documentation and runbooks next to code for easy onboarding and handover</li>
+    </ul>
+    <pre>
+# Example: GitHub Actions workflow
+on:
+  push:
+    branches: [ main ]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ansible and Molecule
+        run: pip install ansible molecule[docker]
+      - name: Lint and test
+        run: |
+          ansible-lint .
+          molecule test
+      - name: Optional: Deploy with AWX CLI
+        run: awx job_templates launch --monitor ...
+    </pre>
+
+    <h2>5. Audit and Compliance</h2>
+    <ul>
+        <li>Enable log aggregation (AWX/Controller logs, centralized syslog, SIEM, Splunk/ELK)</li>
+        <li>Record all playbook/job launches and outputs</li>
+        <li>Enforce separation of duties: who can edit, who can approve, who can deploy</li>
+        <li>Use tags, labels, and metadata in playbooks for cross-referencing inventory, devices, and tickets</li>
+        <li>Version/lock dependencies (roles, collections)</li>
+        <li>Validate with regular (<code>--check</code>, <code>ansible-lint</code>, <code>molecule</code>) runs</li>
+    </ul>
+    <div class="warn">
+        <b>Alert:</b> Any change to infrastructure, credentials, or core logic must be logged, reviewed, and (ideally) auditable for SOX, PCI, ISO, or company policy.
+    </div>
+
+    <h2>6. Practical Exercise: Architecting Enterprise-Scale Ansible</h2>
+    <ol>
+        <li>
+            <strong>Design project layout for 500+ hosts, prod/stage/dev, and 5+ teams:</strong>
+            <ul>
+                <li>Use <code>inventories/prod.yaml</code>, <code>inventories/staging.yaml</code>... for logical separation</li>
+                <li>Map files/roles: <code>group_vars/web.yaml</code>, <code>group_vars/db.yaml</code>, <code>host_vars/prod-db1.yaml</code></li>
+                <li>Use <code>roles/users/</code> for company SSO/LDAP integration, <code>roles/firewall/</code> for security</li>
+                <li>Enforce playbook lint, test, and promote for all merges to prod branch</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Implement RBAC and GitOps:</strong>
+            <ul>
+                <li>Only CI/CD or AWX/Controller users can deploy to prod</li>
+                <li>Review all playbook and vault changes with protected branches</li>
+                <li>Integrate secrets plugins for live key rotation and compliance</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Document everything:</strong>
+            <ul>
+                <li>Add readmes for every role, playbook, and inventory</li>
+                <li>Maintain docs/runbooks for onboarding and incident response</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>Sample Project Structure for Large-Scale Ansible</h3>
+    <pre>
+company-ansible-repo/
+  inventories/
+    prod.yaml
+    staging.yaml
+    dev.yaml
+    network.yaml
+  group_vars/
+    all.yaml
+    db.yaml
+    web.yaml
+  host_vars/
+    prod-db1.yaml
+    prod-web1.yaml
+  roles/
+    users/
+    firewall/
+    nginx/
+    mysql/
+    ...
+  playbooks/
+    site.yml
+    web_stack.yml
+    db_stack.yml
+  vault/
+    prod_secrets.yaml
+    staging_secrets.yaml
+  docs/
+  .github/
+    workflows/ansible-ci.yml
+    </pre>
+
+    <h2>7. References & Further Reading</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html" target="_blank">Official Ansible Best Practices</a></li>
+        <li><a href="https://www.redhat.com/en/resources/automation-controller-datasheet" target="_blank">Red Hat Automation Platform:</a></li>
+        <li><a href="https://www.digitalocean.com/community/tutorials/ansible-best-practices" target="_blank">DigitalOcean Ansible Best Practices</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_secrets.html" target="_blank">Managing Secrets</a></li>
+        <li><a href="https://github.com/ansible/ansible-examples/" target="_blank">Ansible Examples Projects</a></li>
+    </ul>
+
+    <div class="tip">
+        <strong>
+        Scaling with excellence means pairing clear structure, GitOps, automation, and human process.<br>
+        Build your Ansible like an enterprise cloud: repeatable, auditable, resilient, and built for change!
+        </strong>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Enterprise Patterns &amp; Best Practices
+</footer>
+</body>
+</html>

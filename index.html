@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Learning Roadmap: Beginner to Expert</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+		html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #234e70;
+            margin: 0;
+            padding: 0 0 55px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1.1em 0 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 28px auto 0 auto;
+            background: #fff;
+            padding: 2.6em 2em 2.5em 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1 {
+            border-bottom: 2px solid #e0e0ef;
+            padding-bottom: 0.19em;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
+        h2 {
+            color: #234e70;
+            font-size: 1em;
+            font-weight: normal;
+            margin-top: 1.7em;
+            border: none;
+            padding: 0;
+        }
+        .level {
+            color: #388bb0;
+            font-size: 1.13em;
+            margin-top: 1.2em;
+            margin-bottom: 0.7em;
+        }
+        .module {
+            margin: 1.4em 0 1.1em 0;
+            padding: 1.1em 1.5em;
+            background: #f7fafd;
+            border-left: 4px solid #4385b4;
+            border-radius: 5px;
+        }
+        .module a {
+            color: #234e70;
+            font-weight: bold;
+            font-size: 1.12em;
+            text-decoration: underline;
+        }
+        .keyconcept, .milestone, .exercise {
+            font-size: 1em;
+            color: #234e70;
+            margin: 0.2em 0;
+        }
+        .section-label {
+            color: #43a96c;
+            font-size: .98em;
+            font-weight: bold;
+            margin-top: 0.3em;
+        }
+        .dash {
+            margin: 1em 0 1em 0;
+            border: none;
+            border-top: 2px dotted #e0e6f8;
+            background: none;
+            height: 2px;
+        }
+        ul {
+            margin: 0.3em 0 0.6em 2.6em;
+            padding: 0;
+        }
+        li {
+            line-height: 1.44em;
+            margin-bottom: 0.15em;
+        }
+        .resources {
+            background: #f2fff2;
+            border-left: 4px solid #67c97d;
+            border-radius: 4px;
+            margin-top: 1.5em;
+            padding: 1em 2em;
+        }
+        .resources a {
+            color: #087c60;
+            text-decoration: underline;
+        }
+        @media (max-width:600px) {
+            main {
+                padding: 1.2em 0.2em 2em 0.2em;
+            }
+            .module {
+                padding: 0.9em 0.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Learning Roadmap: Beginner to Expert</h1>
+</header>
+<main>
+    <div class="level"><b>Beginner Level</b></div>
+	<a id="module1"></a>
+    <div class="module">
+        <a href="Module 1 Ansible intro.html">1. Introduction &amp; Setup</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Overview of Ansible: Definition, use cases, and architecture</li>
+            <li>Understanding control node, managed nodes, and inventory</li>
+            <li>YAML basics, the syntax used for playbooks</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Install Ansible (on your system or a virtual machine)</li>
+            <li>Connect to remote hosts using SSH</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Install Ansible on your workstation</li>
+            <li>Create an inventory file with localhost and/or another VM</li>
+            <li>Run a ping module: ansible all -m ping to verify host connections</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module2"></a>
+    <div class="module">
+        <a href="Module 2 basic-adhoc-commands.html">2. Basic Ad-Hoc Commands</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Using Ansible modules (ping, command, shell, copy, file, etc.)</li>
+            <li>Running simple ad-hoc tasks on inventory hosts</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Use ad-hoc commands to perform operations (creating files, installing packages)</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Create a directory on all managed hosts</li>
+            <li>Install a package (e.g., httpd or nginx) across all hosts</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module3"></a>
+    <div class="module">
+        <a href="Module 3 playbooks-variables.html">3. Playbooks &amp; Variables</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Structure of playbooks (hosts, tasks, handlers)</li>
+            <li>Use of variables, facts, and simple templating</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Write your first multiple-task playbook</li>
+            <li>Use variables in playbooks</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Write a playbook to install Apache/Nginx and ensure its service is running</li>
+            <li>Use variables for the service name</li>
+        </ul>
+    </div>
+	<hr class="dash">
+<div class="level"><b>Extra Info & Reference</b></div>
+<div class="module">
+    <ul>
+        <li>
+            <a href="Key components and YAML.html">Key Components and YAML</a><br>
+            <span style="color:#444;font-size:0.97em;">
+                Foundational review of control nodes, managed nodes, inventory, and YAML basics.
+            </span>
+        </li>
+        <li>
+            <a href="YAML.html">YAML (Intro & Advanced)</a><br>
+            <span style="color:#444;font-size:0.97em;">
+                A beginner-to-expert guide to YAML syntax, tips, and its role in Ansible.
+            </span>
+        </li>
+        <li>
+            <a href="YAML examples.html">YAML Examples</a><br>
+            <span style="color:#444;font-size:0.97em;">
+                Annotated real-world YAML playbooks, inventories, and patterns.
+            </span>
+        </li>
+        <li>
+            <a href="inventories.html">Inventories (Reference)</a><br>
+            <span style="color:#444;font-size:0.97em;">
+                In-depth explanation and examples for static and dynamic inventories.
+            </span>
+        </li>
+        <li>
+            <a href="hosts-file.html">Hosts File: All About Inventory Files</a><br>
+            <span style="color:#444;font-size:0.97em;">
+                Comprehensive guide on the hosts/inventory file, best practices for large scale.
+            </span>
+        </li>
+    </ul>
+    <div class="tip" style="margin-top:1.2em;">
+        Use these references for deep dives, troubleshooting, and rapid lookup while working through the main modules!
+    </div>
+</div>
+    <hr class="dash">
+    <div class="level"><b>Intermediate Level</b></div>
+	<a id="module4"></a>
+    <div class="module">
+        <a href="Module 4 roles-reusability.html">4. Roles &amp; Reusability</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Organizing playbooks using roles</li>
+            <li>Understanding role directory structure, variable precedence, and scope</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Create and use roles for modular configuration</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Refactor a previous web server playbook into a role, and use it for multiple server types</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module5"></a>
+    <div class="module">
+        <a href="Module 5 templates-jinja2.html">5. Templates &amp; Jinja2</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Using Jinja2 templates to create configuration files</li>
+            <li>Conditional logic and filters in templates</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Deploy a templated configuration file customized per host or group</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Create a Jinja2 template for Nginx virtual hosts; deploy to multiple hosts with varying content</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module6"></a>
+    <div class="module">
+        <a href="Module 6 inventories-static-dynamic.html">6. Inventories: Static &amp; Dynamic</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>INI and YAML inventory formats</li>
+            <li>Dynamic inventory scripts/plugins</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Configure and use a dynamic inventory (e.g., AWS, Azure, or custom script)</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Use the AWS EC2 plugin to discover and manage cloud hosts</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module7"></a>
+    <div class="module">
+        <a href="Module 7 error-handling-idempotence.html">7. Error Handling &amp; Idempotence</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Error handling (ignore_errors, failed_when, registered variables)</li>
+            <li>Idempotence: Playbooks producing the same results on repeated runs</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Handle task failures and use handlers to trigger notifications</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Write a playbook to restart services only if a config change occurs and handle failures in service tasks</li>
+        </ul>
+    </div>
+    <hr class="dash">
+    <div class="level"><b>Advanced Level</b></div>
+	<a id="module8"></a>
+    <div class="module">
+        <a href="Module 8 galaxy-collections.html">8. Ansible Galaxy &amp; Collections</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Using community-maintained roles and collections</li>
+            <li>Publishing your own roles</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Use a Galaxy role in a project</li>
+            <li>Publish a simple role to Galaxy</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Use a public role (e.g., geerlingguy.mysql) to install MySQL on test hosts</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module9"></a>
+    <div class="module">
+        <a href="Module 9 advanced-variables-facts.html">9. Advanced Variables &amp; Fact Gathering</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Host, group, and global variables</li>
+            <li>Ansible Vault for secret management</li>
+            <li>Advanced facts (custom facts, setup module)</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Manage secrets securely with Ansible Vault</li>
+            <li>Write custom fact scripts</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Encrypt database passwords with Ansible Vault</li>
+            <li>Use custom facts for host-specific configuration</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module10"></a>
+    <div class="module">
+        <a href="Module 10 strategies-lookups-plugins.html">10. Strategies, Lookups, and Plugins</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Execution strategies (linear, free)</li>
+            <li>Lookup plugins, filters, and callback plugins</li>
+            <li>Writing custom plugins</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Use lookups to query external data (files, services)</li>
+            <li>Configure callback plugins for event-driven behavior</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Use a lookup to add users from a CSV on target servers</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module11"></a>
+    <div class="module">
+        <a href="Module 11 testing-cicd.html">11. Testing &amp; CI/CD Integration</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Testing roles and playbooks with Molecule</li>
+            <li>Integrating Ansible with continuous integration tools (Jenkins, GitHub Actions)</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Write Molecule tests for roles</li>
+            <li>Trigger playbook runs from a Git commit</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Use GitHub Actions to lint/test your playbooks on push</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module12"></a>
+    <div class="module">
+        <a href="Module 12 custom-modules-contributing.html">12. Custom Modules &amp; Contributing</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Writing Ansible modules (in Python)</li>
+            <li>Contributing to Ansible open-source</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Create and use a custom module</li>
+            <li>Submit an issue or pull request to an Ansible collection</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Write a custom Python module for a task not covered by core modules</li>
+        </ul>
+    </div>
+    <hr class="dash">
+    <div class="level"><b>Expert Level</b></div>
+	<a id="module13"></a>
+    <div class="module">
+        <a href="Module 13 awx-controller-scalable.html">13. Scalable Deployments &amp; AWX/Automation Controller</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Using Ansible at scale</li>
+            <li>Using AWX or Ansible Automation Platform</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Set up AWX locally or in the cloud</li>
+            <li>Run jobs and manage inventories from AWX</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Create a workflow job with AWX that includes scheduling, notifications, and access control</li>
+        </ul>
+    </div>
+    <hr class="dash">
+	<a id="module14"></a>
+    <div class="module">
+        <a href="Module 14 enterprise-patterns-best-practices.html">14. Enterprise Patterns &amp; Best Practices</a>
+        <div class="section-label">Key Concepts:</div>
+        <ul>
+            <li>Organizing large-scale playbooks and roles</li>
+            <li>Access control, RBAC, and enterprise secrets management</li>
+            <li>Audit and compliance</li>
+        </ul>
+        <div class="section-label">Milestones:</div>
+        <ul>
+            <li>Design a project structure suitable for a large team/environment</li>
+            <li>Implement GitOps with Ansible</li>
+        </ul>
+        <div class="section-label">Practical Exercises:</div>
+        <ul>
+            <li>Architect and document an Ansible setup supporting hundreds of hosts and RBAC</li>
+        </ul>
+    </div>
+    <hr class="dash">
+    <div class="resources">
+        <b>Recommended Resources</b>
+        <ul>
+            <li><a href="https://docs.ansible.com/ansible/latest/index.html" target="_blank">Ansible Official Documentation</a></li>
+            <li><a href="https://www.ansiblefordevops.com/" target="_blank">Ansible for DevOps by Jeff Geerling</a></li>
+            <li><a href="https://galaxy.ansible.com/" target="_blank">Ansible Galaxy</a></li>
+            <li><a href="https://cloudacademy.com/learning-paths/?technology=ansible" target="_blank">Cloud Academy/Learning platform Ansible paths</a></li>
+        </ul>
+    </div>
+	    <div class="level"><b>Expert Level</b></div>
+    <hr class="dash">
+	<a id="module15"></a>
+    <div class="level"><b>Module 15: Projects</b></div>
+    <div class="module">
+        <a href="project-examples-workflows-1.html">Project Workflows: Complete Examples</a>
+        <ul>
+            <li>Comprehensive real-world scenarios combining all Ansible concepts.</li>
+            <li>Sample project layouts, workflows, playbooks, inventories, vault files, templates, and GitHub CI/CD pipelines.</li>
+            <li>Demonstrates GitOps, notification, RBAC, and more.</li>
+        </ul>
+        <div class="section-label">Featured Projects:</div>
+        <ul>
+            <li>
+                <a href="patch-onprem-project.html">
+                    Global On-Prem Linux Patch Automation (patchy.sh)
+                </a>
+                <ul>
+                    <li>Patch worldwide Red Hat servers by region, client, and server type using a unified script.
+                </ul>
+            </li>
+            <li>
+                <a href="patch-management-project.html">
+                    Compliance &amp; Patch Management at Scale (AWX/Tower)
+                </a>
+                <ul>
+                    <li>Patching, compliance scanning, audit, notifications, and RBAC for 1000+ hosts.</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="tip" style="margin-top:1.5em;">
+            Explore these projects to see how real-world automation uses every Ansible module and links everything together!
+        </div>
+    </div>
+    <hr class="dash">
+    <div class="resources">
+        <b>Recommended Resources</b>
+        <ul>
+            <li><a href="https://docs.ansible.com/ansible/latest/index.html" target="_blank">Ansible Official Documentation</a></li>
+            <li><a href="https://www.ansiblefordevops.com/" target="_blank">Ansible for DevOps by Jeff Geerling</a></li>
+            <li><a href="https://galaxy.ansible.com/" target="_blank">Ansible Galaxy</a></li>
+            <li><a href="https://cloudacademy.com/learning-paths/?technology=ansible" target="_blank">Cloud Academy/Learning platform Ansible paths</a></li>
+        </ul>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Roadmap Index
+</footer>
+</body>
+</html>

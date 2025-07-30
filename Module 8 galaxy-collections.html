@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Galaxy &amp; Collections</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Galaxy &amp; Collections</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module8" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What is Ansible Galaxy?</h2>
+    <p>
+        <b>Ansible Galaxy</b> is the official, free community repository for Ansible <b>roles</b> and <b>collections</b>. With Galaxy, you can:
+    </p>
+    <ul>
+        <li>Use thousands of pre-built, proven roles and collections for everything from web servers to databases to cloud providers</li>
+        <li>Share your own roles/collections with the world or within your team/organization</li>
+        <li>Find best-practice automation for common software, cloud, and infrastructure tasks</li>
+    </ul>
+    <div class="diagram">
+        <svg width="640" height="110">
+            <rect x="30" y="24" width="180" height="60" rx="13" fill="#f1e7fc" stroke="#6a3ec7"/>
+            <text x="58" y="63" font-size="22" fill="#6a3ec7" font-weight="bold">Ansible Galaxy</text>
+            <rect x="260" y="18" width="180" height="30" rx="8" fill="#e0fae9" stroke="#43a96c"/>
+            <rect x="260" y="56" width="180" height="30" rx="8" fill="#e0fae9" stroke="#43a96c"/>
+            <rect x="460" y="37" width="150" height="44" rx="11" fill="#f9ffd2" stroke="#c3da4a"/>
+            <text x="288" y="37" font-size="16" fill="#22884a">Roles &amp; Plugins</text>
+            <text x="288" y="74" font-size="16" fill="#22884a">Collections</text>
+            <text x="478" y="63" font-size="16" fill="#879911">Your Playbooks</text>
+            <polygon points="210,54 260,32" fill="none" stroke="#6a3ec7" stroke-width="3" marker-end="url(#arrowGal1)"/>
+            <polygon points="210,54 260,74" fill="none" stroke="#6a3ec7" stroke-width="3" marker-end="url(#arrowGal2)"/>
+            <polygon points="440,33 460,59" fill="none" stroke="#22884a" stroke-width="3" marker-end="url(#arrowGal3)"/>
+            <polygon points="440,86 460,59" fill="none" stroke="#22884a" stroke-width="3" marker-end="url(#arrowGal3)"/>
+            <defs>
+                <marker id="arrowGal1" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#6a3ec7"/>
+                </marker>
+                <marker id="arrowGal2" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#6a3ec7"/>
+                </marker>
+                <marker id="arrowGal3" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#22884a"/>
+                </marker>
+            </defs>
+        </svg>
+        <span style="font-size:1.09em;color:#234e70;">
+            <b>Galaxy</b> lets you <b>import &amp; share</b> reusable building blocks in seconds!
+        </span>
+    </div>
+
+    <h2>2. What are Roles and Collections?</h2>
+    <ul>
+        <li><b>Roles:</b> Self-contained automation components for a specific use—like "nginx", "mysql", "users", "firewall", etc. (see previous module for structure)</li>
+        <li><b>Collections:</b> The modern distribution format for Ansible code. Bundles <u>roles, modules, plugins, docs</u> together under a unique namespace, supports versioning, dependencies, and more.</li>
+    </ul>
+    <h4>Collection Structure Example</h4>
+    <pre>
+ansible_collections/
+  my_namespace/
+    my_collection/
+      roles/
+      playbooks/
+      plugins/
+      docs/
+      galaxy.yml
+    </pre>
+    <ul>
+        <li><code>my_namespace.my_collection.role_name</code> is how you use a role from a collection.</li>
+        <li>Collections live in <code>ansible_collections/</code> and are referenced by path or via Galaxy.</li>
+    </ul>
+    <div class="tip">
+        <b>Modern best practice:</b> Use <i>collections</i> for all new development. Roles are still highly important and collections simply bundle them!
+    </div>
+
+    <h2>3. Using Community Roles and Collections</h2>
+    <h3>A) Installing From Galaxy</h3>
+    <pre>
+ansible-galaxy role install geerlingguy.mysql
+ansible-galaxy collection install community.mysql
+    </pre>
+    <ul>
+        <li>Places roles in <code>roles/</code> and collections in <code>ansible_collections/</code> by default.</li>
+        <li>Install multiple with a <code>requirements.yml</code> file:
+<pre>
+# requirements.yml
+roles:
+  - name: geerlingguy.mysql
+collections:
+  - name: community.mysql
+</pre>
+        <code>ansible-galaxy install -r requirements.yml</code>
+        </li>
+    </ul>
+
+    <h3>B) Using a Galaxy Role/Collection in Playbooks</h3>
+    <pre>
+---
+- hosts: dbservers
+  become: yes
+  roles:
+    - geerlingguy.mysql
+    </pre>
+    <pre>
+---
+- hosts: dbservers
+  become: yes
+  tasks:
+    - name: Use plugin from a collection
+      community.mysql.mysql_user:
+        name: myuser
+        password: mypass
+        priv: "*.*:ALL"
+        state: present
+    </pre>
+    <blockquote>
+        <b>Tip:</b> <code>community.mysql.mysql_user</code> is the fully qualified <kbd>collection.module</kbd> name. Check docs for the right FQCN!
+    </blockquote>
+
+    <h3>C) Finding Roles &amp; Collections</h3>
+    <ul>
+        <li>Browse: <a href="https://galaxy.ansible.com/browse" target="_blank">Ansible Galaxy Browse</a></li>
+        <li>Search directly from CLI:
+<pre>
+ansible-galaxy search mysql
+ansible-galaxy collection list
+</pre>
+        </li>
+        <li>Full module, plugin, and role documentation provided on Galaxy.</li>
+    </ul>
+
+    <h2>4. Publishing Your Own Role or Collection</h2>
+    <h3>Role Publishing</h3>
+    <ol>
+        <li>Prepare your role with metadata (<code>meta/main.yml</code> + README).</li>
+        <li>Create an account at <a href="https://galaxy.ansible.com/" target="_blank">Galaxy</a>.</li>
+        <li>Link to your GitHub (or upload).</li>
+        <li><pre>ansible-galaxy import my_namespace my_role</pre></li>
+    </ol>
+    <blockquote>
+        Follow <a href="https://docs.ansible.com/ansible/latest/galaxy/user_guide.html" target="_blank">the official guide</a> for up-to-date requirements and naming conventions.
+    </blockquote>
+    <h3>Collection Publishing</h3>
+    <ol>
+        <li>Scaffold with:<br>
+            <pre>ansible-galaxy collection init my_namespace.my_collection</pre>
+        </li>
+        <li>Edit <code>galaxy.yml</code> and organize plugins/roles.</li>
+        <li>Build with:
+            <pre>ansible-galaxy collection build</pre>
+        </li>
+        <li>Publish/upload (by file or via Galaxy CLI).</li>
+    </ol>
+    <blockquote>
+        Collections use strict <code>namespace.collection</code> names and are versioned via Semantic Versioning.
+    </blockquote>
+    <div class="tip">
+        <b>Best Practices:</b>
+        <ul>
+            <li>Document all variables and requirements in your role/collection <code>README.md</code></li>
+            <li>Follow semantic versioning for reliability and user trust</li>
+            <li>Test your collection roles with <a href="https://molecule.readthedocs.io/en/latest/" target="_blank">Molecule</a></li>
+        </ul>
+    </div>
+
+    <h2>5. Practical Exercise: Using geerlingguy.mysql to Install MySQL</h2>
+    <ol>
+        <li><b>Download the Role:</b>
+            <pre>ansible-galaxy role install geerlingguy.mysql</pre>
+        </li>
+        <li><b>Create an Inventory File:</b>
+            <pre>
+[dbservers]
+db1 ansible_host=192.168.33.10 ansible_user=ubuntu
+db2 ansible_host=192.168.33.11 ansible_user=ubuntu
+            </pre>
+        </li>
+        <li><b>Write your Playbook:</b>
+            <pre>
+---
+- hosts: dbservers
+  become: yes
+  vars:
+    mysql_root_password: mysecret
+    mysql_databases:
+      - name: projectdb
+    mysql_users:
+      - name: appuser
+        host: "%"
+        password: apppass
+        priv: "projectdb.*:ALL"
+  roles:
+    - geerlingguy.mysql
+            </pre>
+        </li>
+        <li><b>Run the Playbook:</b>
+            <pre>ansible-playbook -i inventory mysql-setup.yml</pre>
+        </li>
+        <li>
+            <b>Result:</b> MySQL is installed, a database/user are configured, and root password is set—all via a maintainable, community-supported role.
+        </li>
+    </ol>
+
+    <h2>6. Best Practices, Troubleshooting &amp; Advanced Usage</h2>
+    <ul>
+        <li>Track roles and collections in <code>requirements.yml</code> so your project is reproducible for everyone and CI/CD</li>
+        <li>Pin to role/collection versions in <code>requirements.yml</code> for stability</li>
+        <li>Contribute upstream by reporting bugs or submitting PRs</li>
+        <li>Test downloaded roles in a separate, non-production environment before using in production scenarios</li>
+        <li>Watch out for role variable name conflicts—use unique variable prefixes (e.g., <code>myrole_</code> or <code>namespace_</code>)</li>
+        <li>If a collection/role requires certain Ansible versions, check <code>requirements</code> and <code>meta</code> for compatibility</li>
+    </ul>
+    <div class="warn">
+        <b>Troubleshooting:</b>
+        <ul>
+            <li>If you get "role/collection not found," check install location and spelling, update <code>ANSIBLE_ROLES_PATH</code> or <code>collections_paths</code> as needed</li>
+            <li>If tasks fail, read the role’s docs—many require variables, facts, or environment settings</li>
+            <li>If sharing code inside a company, consider a private Galaxy server or artifact repository (<a href="https://galaxy.ansible.com/docs/contributing/hosting.html" target="_blank">Ansible Galaxy hosting</a>)</li>
+        </ul>
+    </div>
+
+    <h2>7. References &amp; Further Reading</h2>
+    <ul>
+        <li><a href="https://galaxy.ansible.com/" target="_blank">Ansible Galaxy Home</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/galaxy/user_guide.html" target="_blank">Official Galaxy User Guide</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/collections_guide/index.html" target="_blank">Ansible Collections User Guide</a></li>
+        <li><a href="https://galaxy.ansible.com/geerlingguy/mysql" target="_blank">geerlingguy.mysql Role on Galaxy</a></li>
+        <li><a href="https://molecule.readthedocs.io/en/latest/" target="_blank">Molecule: Role/Collection Testing</a></li>
+    </ul>
+    <div class="tip">
+        <strong>
+            Leverage the power of Ansible Galaxy &amp; Collections<br>
+            — maximize your productivity with robust, vetted, and community-driven automation resources!
+        </strong>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Galaxy &amp; Collections
+</footer>
+</body>
+</html>

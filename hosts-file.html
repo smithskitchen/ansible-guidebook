@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: The Hosts File (Inventory File)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.5em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.4em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        blockquote {
+            border-left: 3px solid #cce6ff;
+            padding-left: 1em;
+            color: #234e70;
+            margin: 1.5em 0;
+            font-style: italic;
+            background: #f6faff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">The Hosts File (Inventory File)</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module3" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What is the Ansible Hosts File?</h2>
+    <p>
+        The <strong>hosts file</strong>, more formally known as the <strong>inventory file</strong>, is the foundational file for Ansible automation. It lists all managed nodes and groups, tells Ansible where your infrastructure lives, and (optionally) defines variables and connection details for every managed host.
+    </p>
+
+    <h3>Key Roles of the Hosts File</h3>
+    <ul>
+        <li>Defines <b>which hosts</b> Ansible can manage</li>
+        <li>Groups hosts into logical collections (web, db, staging, prod, etc.)</li>
+        <li>Provides host and group variables for runtime personalization</li>
+        <li>Specifies connection info: user, port, address, interpreter, etc.</li>
+    </ul>
+    <div class="tip">The hosts file can be a static INI file (<code>hosts</code>), a YAML inventory, or even dynamically generated (see <a href="inventories.html">Inventories</a>).</div>
+
+    <h2>2. Where is the Hosts File?</h2>
+    <ul>
+        <li><b>Global default:</b> <code>/etc/ansible/hosts</code> on UNIX/Linux systems</li>
+        <li><b>Recommended:</b> Keep a project-specific <code>hosts</code> file in your Ansible playbook or project directory for modularity and version control</li>
+        <li>You can specify the path to your inventory with <code>-i</code>:
+            <pre>ansible all -i ./hosts -m ping</pre>
+        </li>
+    </ul>
+
+    <h2>3. Inventory File Formats: INI vs YAML</h2>
+    <ul>
+        <li>
+            <b>INI format</b> is simple and widely used, best for straightforward or small setups.
+        </li>
+        <li>
+            <b>YAML format</b> is more powerful, supporting nested groups, richer variables, and matches modern infrastructure-as-code standards.
+        </li>
+    </ul>
+
+    <h2>4. INI-Format Hosts File: Syntax and Examples</h2>
+    <h3>Basic Structure</h3>
+    <pre>
+[webservers]
+web1.example.com
+web2.example.com
+
+[databases]
+db1.example.com
+db2.example.com
+
+[all:vars]
+ansible_port=22
+ansible_user=admin
+    </pre>
+    <ul>
+        <li><b>[groupname]</b>: Names a group of hosts</li>
+        <li><b>Host entries</b>: Can be FQDNs, shortnames, or IP addresses</li>
+        <li><b>[group:vars]</b>: Variables applied to all hosts in group</li>
+        <li><b>[all:vars]</b>: Vars for all hosts globally</li>
+    </ul>
+    <h3>Host-Specific Variables</h3>
+    <pre>
+web1 ansible_host=10.0.0.1 ansible_user=ubuntu
+db1  ansible_python_interpreter=/usr/bin/python3
+    </pre>
+    <ul>
+        <li><code>ansible_host</code>: SSH target (IP/FQDN) override</li>
+        <li><code>ansible_user</code>: SSH user</li>
+        <li><code>ansible_python_interpreter</code>: Which Python to use</li>
+    </ul>
+    <h3>Host Pattern Ranges</h3>
+    <pre>
+web[01:05].example.com  # expands to web01 to web05
+    </pre>
+
+    <h2>5. YAML-Format Hosts File: Structure and Examples</h2>
+    <h3>Simple Example</h3>
+    <pre>
+all:
+  hosts:
+    web1.example.com:
+    db1.example.com:
+  children:
+    webservers:
+      hosts:
+        web1.example.com:
+    databases:
+      hosts:
+        db1.example.com:
+    </pre>
+    <h3>YAML with Variables</h3>
+    <pre>
+all:
+  vars:
+    ansible_user: admin
+    ansible_port: 2222
+  children:
+    webservers:
+      hosts:
+        web1.example.com:
+          http_port: 8080
+        web2.example.com:
+    databases:
+      hosts:
+        db1.example.com:
+        db2.example.com:
+          ansible_user: dba
+    </pre>
+    <ul>
+        <li><b>all/vars</b>: Variables applied to all</li>
+        <li><b>children</b>: Nested groups</li>
+        <li>Host-specific settings under each host</li>
+    </ul>
+    <div class="tip">Use YAML for large, complex, or heavily dynamic environments.</div>
+
+    <h2>6. Defining Groups and Children</h2>
+    <pre>
+[frontend]
+fe1 fe2 fe3
+
+[backend]
+be1 be2
+
+[all:children]
+frontend
+backend
+    </pre>
+    <pre>
+# YAML
+all:
+  children:
+    frontend:
+      hosts:
+        fe1:
+        fe2:
+        fe3:
+    backend:
+      hosts:
+        be1:
+        be2:
+    </pre>
+    <ul>
+        <li>Groups cluster hosts logically for targeted automation</li>
+        <li><b>Children</b> keyword lets you build group hierarchies</li>
+    </ul>
+
+    <h2>7. Variable Precedence (Simplified)</h2>
+    <ol>
+        <li><b>Command line</b> (e.g. <code>-e var=value</code>)</li>
+        <li><b>Playbook <code>vars</code></b></li>
+        <li><b>Host vars</b> <code>host_vars/hostname</code> or in the inventory</li>
+        <li><b>Group vars</b> <code>group_vars/groupname</code> or in the inventory</li>
+        <li><b>all:vars</b></li>
+        <li><b>Role defaults</b></li>
+    </ol>
+    <p>Where variables overlap, the highest-precedence value is used.</p>
+
+    <h2>8. Advanced: Inventory Directories and Variable Files</h2>
+    <pre>
+inventory/
+  hosts          # main inventory file (INI or YAML)
+  group_vars/
+    web.yaml     # group-level variables
+  host_vars/
+    web1.yaml    # host-level variables
+    </pre>
+    <div class="tip">
+        This structure allows clean, scalable and modular inventory management (recommended for serious projects).
+    </div>
+
+    <h2>9. Useful Inventory Host File Patterns</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Pattern</th>
+                <th>Matches</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>web</code></td>
+                <td>all hosts in <code>[web]</code> group</td>
+            </tr>
+            <tr>
+                <td><code>web:&amp;prod</code></td>
+                <td>hosts in both <code>[web]</code> and <code>[prod]</code> groups</td>
+            </tr>
+            <tr>
+                <td><code>all:!db</code></td>
+                <td>all hosts except those in <code>[db]</code> group</td>
+            </tr>
+            <tr>
+                <td><code>web[01:05]</code></td>
+                <td><code>web01</code> through <code>web05</code> (range)</td>
+            </tr>
+            <tr>
+                <td><code>*.example.com</code></td>
+                <td>hostname glob matching</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="tip">
+        Use host patterns to precisely target hosts/groups for your ad-hoc commands and playbooks.
+    </div>
+
+    <h2>10. Best Practices</h2>
+    <ul>
+        <li>Use lowercase names for hosts and groups</li>
+        <li>Organize related hosts into descriptive groups</li>
+        <li>Store your inventory in version control (e.g., Git)</li>
+        <li>Prefer YAML for large or dynamic projects</li>
+        <li>Use host and group variables instead of duplicating settings</li>
+        <li>Document your groups and host variable usage</li>
+    </ul>
+
+    <h2>11. Migrating Between INI and YAML Inventory Formats</h2>
+    <ul>
+        <li>You can convert INI inventories to YAML for richer structure</li>
+        <li>Tools: <a href="https://ini-to-yaml.com/" target="_blank">INI-to-YAML.com</a>, PyYAML scripting</li>
+        <li>Test new inventories with <code>ansible-inventory -i hosts.yaml --list</code></li>
+    </ul>
+
+    <h2>12. Troubleshooting Common Hosts File Issues</h2>
+    <ul>
+        <li>
+            <b>“Host unreachable”:</b>
+            Check <code>ansible_host</code>, <code>ansible_user</code>, SSH keys, and network/firewall configuration.
+        </li>
+        <li>
+            <b>“Failed to parse inventory”:</b>
+            Errors in indentation (YAML), missing brackets (INI), or malformed entries can cause this. Use <code>yamllint</code> or careful review.
+        </li>
+        <li>
+            <b>Variables not applied:</b>
+            Ensure correct indentation/syntax and check variable precedence.
+        </li>
+        <li>
+            <b>No hosts matched:</b>
+            Verify group names, spelling, and the path to the hosts file.
+        </li>
+        <li>
+            <b>Multiple inventories:</b>
+            If using directory inventory, all compatible files will be merged.
+        </li>
+    </ul>
+
+    <h2>13. References</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html" target="_blank">Ansible: Introduction to Inventory</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_dynamic_inventory.html" target="_blank">Ansible: Dynamic Inventory</a></li>
+        <li><a href="https://www.yamllint.com/" target="_blank">YAMLLint: YAML validator</a></li>
+        <li><a href="https://ini-to-yaml.com/" target="_blank">INI-to-YAML.com: Converter</a></li>
+    </ul>
+    <div class="tip">
+        <b>Remember:</b> The hosts file is the "inventory"—everything Ansible manages begins there. Invest time to structure it for clarity and automation at scale.
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; The Hosts File (Inventory)
+</footer>
+</body>
+</html>

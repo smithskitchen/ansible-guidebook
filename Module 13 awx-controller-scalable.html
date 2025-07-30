@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Scalable Deployments & AWX/Automation Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 1050px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 800px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Scalable Deployments &amp; AWX/Automation Controller</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module13" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Ansible at Scale: Why Do We Need a Controller?</h2>
+    <ul>
+        <li>For <strong>large environments</strong> (dozens, hundreds, or thousands of hosts), coordination, repeatability, and robust access control are critical.
+        </li>
+        <li>Ansible Tower/AWX (open-source) and Automation Controller (enterprise) provide:
+          <ul>
+            <li>Centralized UI/API for launching, scheduling, and tracking jobs</li>
+            <li>Inventory, secret, and credentials management</li>
+            <li>Role-based access control (RBAC)</li>
+            <li>Notifications, logging, auditing</li>
+            <li>Scaling via clusters and multiple execution nodes</li>
+            <li>Workflows for multi-step automations and approvals</li>
+          </ul>
+        </li>
+    </ul>
+
+    <div class="diagram">
+<svg width="950" height="110">
+  <!-- AWX server box -->
+  <rect x="30" y="40" width="170" height="50" rx="15" fill="#faffea" stroke="#c9d97b" stroke-width="2"/>
+  <text x="50" y="70" font-size="19" font-family="Segoe UI,Arial" fill="#b5b315" font-weight="bold">AWX/Controller</text>
+  <!-- Dashed to inventory -->
+  <line x1="200" y1="66" x2="267" y2="66" stroke="#aac6da" stroke-width="3" stroke-dasharray="8,7"/>
+  <text x="274" y="73" font-size="22" font-family="Segoe UI,Arial" fill="#aac6da">&gt;</text>
+  <!-- Inventory box -->
+  <rect x="299" y="45" width="130" height="40" rx="10" fill="#eaf6fd" stroke="#2288bb" stroke-width="2"/>
+  <text x="322" y="70" font-size="16" font-family="Segoe UI,Arial" fill="#2288bb" font-weight="bold">
+    Inventory
+  </text>
+  <!-- Dashed to cloud -->
+  <line x1="429" y1="65" x2="516" y2="65" stroke="#65c36e" stroke-width="3" stroke-dasharray="8,7"/>
+  <text x="521" y="73" font-size="22" font-family="Segoe UI,Arial" fill="#65c36e">&gt;</text>
+  <!-- Cloud box -->
+  <rect x="546" y="38" width="130" height="45" rx="10" fill="#e0fae9" stroke="#4abb46" stroke-width="2"/>
+  <text x="570" y="66" font-size="15" font-family="Segoe UI,Arial" fill="#4abb46" font-weight="bold">
+    Cloud/VMs/etc.
+  </text>
+  <!-- Dashed to users -->
+  <line x1="160" y1="40" x2="160" y2="15" stroke="#d8a642" stroke-width="3" stroke-dasharray="7,7"/>
+  <polyline points="140,15 160,5 180,15" fill="none" stroke="#d8a642" stroke-width="2"/>
+  <text x="110" y="22" font-size="14" fill="#d8a642">Admins/Users</text>
+</svg>
+<br>
+<span style="font-size:1.04em;color:#234e70;">
+    AWX (open source, UI/API) centralizes orchestration, secrets, inventory, and scaling by design.
+</span>
+</div>
+
+    <h2>2. AWX, Automation Controller, and Tower: Key Components</h2>
+    <ul>
+        <li><b>AWX:</b> The open-source upstream for <i>Red Hat Ansible Tower/Controller</i>.</li>
+        <li><b>Automation Controller:</b> Enterprise version (with advanced RBAC, clustering, and support, formerly called Tower).</li>
+        <li><b>Clustered Execution:</b> Scale out to multiple execution nodes for high availability (HA) and big fleets/clouds.</li>
+        <li><b>Built-in Features:</b>
+            <ul>
+                <li>RBAC (role-based access control)</li>
+                <li>Workflows (multi-step, dependent automation)</li>
+                <li>Secrets/Credentials management (vaults, keyring, etc.)</li>
+                <li>Scheduling, audit trails, logging, notifications, approval gates</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>3. Setting Up AWX (Local or Cloud) – Step by Step</h2>
+    <h3>A) Install with Docker Compose (Recommended for Dev/Test)</h3>
+    <ol>
+        <li><b>Clone the installer:</b>
+            <pre>
+git clone https://github.com/ansible/awx.git
+cd awx/tools/docker
+            </pre>
+        </li>
+        <li><b>Configure (optional):</b>
+            <ul>
+                <li>Edit <code>docker-compose.yml</code> to tweak ports, credentials, volumes, etc.</li>
+            </ul>
+        </li>
+        <li><b>Run AWX:</b>
+            <pre>
+docker compose up -d
+# OR for older docker-compose:
+docker-compose up -d
+            </pre>
+        </li>
+        <li><b>Access UI:</b>
+            <ul>
+                <li>Go to <a href="http://localhost:8043" target="_blank">http://localhost:8043</a> (default)</li>
+                <li>Default login: <code>admin / password</code> or see logs for generated credentials</li>
+            </ul>
+        </li>
+    </ol>
+    <h3>B) Production/Cloud Deployments</h3>
+    <ul>
+        <li>Use the official Operator (Kubernetes/OpenShift)</li>
+        <li>Follow Red Hat’s Automation Platform or Ansible Controller installer for enterprise HA architecture</li>
+        <li>Integrate with SSO, external secrets stores, and real enterprise inventories/cloud sources</li>
+        <li>Cluster and scale as needed!</li>
+    </ul>
+    <blockquote>
+        <b>Docs:</b> 
+        <a href="https://github.com/ansible/awx/blob/devel/INSTALL.md" target="_blank">AWX Install Guide</a> — 
+        <a href="https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform" target="_blank">Helm/Operator Docs</a>
+    </blockquote>
+
+    <h2>4. Core Workflow: Jobs, Projects, and Inventories</h2>
+    <ol>
+        <li>
+            <b>Create a Project:</b>
+            <ul>
+                <li>Points to a Git repo/SVN/archive with playbooks and roles</li>
+            </ul>
+        </li>
+        <li>
+            <b>Add Inventories:</b>
+            <ul>
+                <li>Static file, YAML, or plugin-based dynamic cloud/CMDB/etc.</li>
+            </ul>
+        </li>
+        <li>
+            <b>Add Credentials:</b>
+            <ul>
+                <li>SSH keys, Vault passwords, AWS/cloud provider keys, etc.</li>
+            </ul>
+        </li>
+        <li>
+            <b>Create Job Templates:</b>
+            <ul>
+                <li>Specifies playbook, inventory, credentials, extra vars, limits, tags</li>
+            </ul>
+        </li>
+        <li>
+            <b>Run Jobs or Build Workflows:</b>
+            <ul>
+                <li>Manual, scheduled, or webhook-triggered launches</li>
+                <li>Chain jobs (with dependencies/logic) in Workflows</li>
+            </ul>
+        </li>
+        <li>
+            <b>Monitor &amp; Audit:</b>
+            <ul>
+                <li>Live output, logs, notifications, and full job history</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>5. Practical Lab: Create a Workflow Job (Scheduling, Notifications, RBAC)</h2>
+    <ol>
+        <li>
+            <b>Login to AWX/Controller UI as admin</b>
+        </li>
+        <li>
+            <b>Create:</b>
+            <ul>
+                <li>Project: Connects to your playbook Git repository</li>
+                <li>Inventory: Add a static or dynamic inventory</li>
+                <li>Credentials: Add needed SSH or Cloud credentials</li>
+                <li>Job Template: Choose playbook, inventory, credentials, and set schedule/tags</li>
+            </ul>
+        </li>
+        <li>
+            <b>Setup Email/Slack Notification:</b>
+            <ul>
+                <li>Go to Notifications, add a service (e.g., email or Slack webhook)</li>
+                <li>Associate with Job Template for approval or completion triggers</li>
+            </ul>
+        </li>
+        <li>
+            <b>Role-Based Access Control:</b>
+            <ul>
+                <li>Go to Access or Users & Teams, assign roles (admin, auditor, execute only, etc.) for inventory/job/project</li>
+            </ul>
+        </li>
+        <li>
+            <b>Create a Workflow:</b>
+            <ul>
+                <li>Link multiple job templates in a visual workflow (with decision nodes, conditionals, approvals)</li>
+                <li>e.g., “Deploy app”, wait for manual approval, then “Restart service”, then “Validate health check”</li>
+            </ul>
+        </li>
+        <li>
+            <b>Launch Manually, On Schedule, or via Webhook:</b>
+            <ul>
+                <li>Click RUN to launch immediately, or</li>
+                <li>Set a schedule for recurring runs, or</li>
+                <li>Configure GitHub/git webhook to kick off on push/PR</li>
+            </ul>
+        </li>
+    </ol>
+    <blockquote>
+        <b>Result:</b> AWX manages the job, output, notifications, and access controls for you, at scale!
+    </blockquote>
+
+    <h2>6. More on Scaling: Execution Nodes & Clustering</h2>
+    <ul>
+        <li>Cluster nodes handle jobs in parallel (HA and scale-out)</li>
+        <li>Execution nodes can be distributed regionally or by workload</li>
+        <li>Controller web/UI and API scale horizontally</li>
+        <li>External database, object store, and centralized logging recommended for enterprise scale</li>
+    </ul>
+
+    <h2>7. Advanced Features Overview</h2>
+    <ul>
+        <li><b>Surveys:</b> Prompt users/operators for input before job run</li>
+        <li><b>Approvals + Manual Steps:</b> Gate workflow transition on human/operator approval</li>
+        <li><b>Smart Inventories:</b> Dynamic filtering and grouping of hosts (e.g., by tag, fact, environment)</li>
+        <li><b>REST API:</b> Full control for provisioning, DevOps, and integration</li>
+        <li><b>Credential Plugins:</b> Integrate with HashiCorp Vault, CyberArk, AWS Secrets Manager, etc.</li>
+        <li><b>SCM Polling + Webhooks:</b> Trigger on code or content update automatically</li>
+        <li><b>Custom Notification Plugins:</b> Send to Slack, Teams, custom endpoints</li>
+    </ul>
+
+    <h2>8. Example: Inventory/Job Template via API (for Integration)</h2>
+    <p>
+        You can automate creation of inventories, schedules, jobs, or workflow launches via Ansible Controller or AWX’s REST API.
+    </p>
+    <pre>
+# Get all job templates (authenticated)
+curl -X GET -H "Authorization: Bearer &lt;TOKEN&gt;" https://controller.example.com/api/v2/job_templates/
+
+# Launch a specific job template (ID 15)
+curl -X POST -H "Authorization: Bearer &lt;TOKEN&gt;" \
+     https://controller.example.com/api/v2/job_templates/15/launch/
+    </pre>
+    <blockquote>
+        <b>See:</b> 
+        <a href="https://docs.ansible.com/automation-controller/latest/html/controllerapi/api_ref.html" target="_blank">API Docs</a> |
+        <a href="https://docs.ansible.com/automation-controller/latest/html/userguide/workflows.html" target="_blank">Workflows</a>
+    </blockquote>
+
+    <h2>9. Best Practices & Tips</h2>
+    <ul>
+        <li>Always use version-controlled repositories for all projects/playbooks</li>
+        <li>Use folders/labels/tags to stay organized as deployments scale</li>
+        <li>Use RBAC and limit secrets access only to what is required</li>
+        <li>For DR/HA: regularly backup controller database and configs</li>
+        <li>Use notifications and logging hooks to keep teams informed (including failure alerts!)</li>
+        <li>Document job templates and workflows for team handoff and scaling</li>
+    </ul>
+
+    <h2>10. References & Further Reading</h2>
+    <ul>
+        <li><a href="https://github.com/ansible/awx/blob/devel/INSTALL.md" target="_blank">AWX Install Guide (GitHub)</a></li>
+        <li><a href="https://docs.ansible.com/automation-controller/latest/html/quickstart/index.html" target="_blank">Ansible Controller Quickstart</a></li>
+        <li><a href="https://docs.ansible.com/automation-controller/latest/html/controllerapi/api_ref.html" target="_blank">Controller API Reference</a></li>
+        <li><a href="https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform" target="_blank">Red Hat Automation Platform Docs</a></li>
+        <li><a href="https://github.com/ansible/awx" target="_blank">AWX on GitHub</a></li>
+    </ul>
+
+    <div class="tip">
+        <strong>
+        AWX and Automation Controller let you operationalize and scale your Ansible automations—across teams, clouds, and continents!<br>
+        Adopt them to bring governance, audit, and efficiency to true enterprise automation.
+        </strong>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Scalable Deployments &amp; AWX/Automation Controller
+</footer>
+</body>
+</html>

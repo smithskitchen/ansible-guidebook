@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Project Workflows &amp; Complete Examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 60px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 1180px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.3em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.3em;
+            font-size: 1.08em;
+            color: #3d6ba7;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2.2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto 1em auto;
+            text-align: center;
+            padding: 10px 0 0.8em 0;
+            max-width: 980px;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.4em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.1em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Complete Projects &amp; Workflows</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module15" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>Overview: Unified Ansible Projects in the Real World</h2>
+    <ul>
+        <li>Enterprise and DevOps teams organize their Ansible work around <strong>multi-folder repositories</strong> containing playbooks, inventories, roles, templates, vaults, and CI/CD workflows.</li>
+        <li>Each project typically maps to a business unit, product stack, cloud deployment, app, or ops pipeline.</li>
+        <li>Everything is stored (and version-controlled) on GitHub/GitLab, integrated with testing/lint pipelines, reviews, and deployment automation—i.e., full <b>GitOps</b>.</li>
+    </ul>
+
+    <h2>Common Ansible Project Layout</h2>
+    <pre>
+my-ansible-project/
+  inventories/
+    prod.yaml
+    staging.yaml
+  group_vars/
+    all.yaml
+    db.yaml
+    web.yaml
+  host_vars/
+    app1.yaml
+  playbooks/
+    site.yml
+    app_deploy.yml
+    security_compliance.yml
+  roles/
+    common/
+    nginx/
+    mysql/
+    users/
+    ...
+  templates/
+  vault/
+    prod-secrets.yaml
+    staging-secrets.yaml
+  files/
+  docs/
+  .github/
+    workflows/ci.yml
+    </pre>
+    <blockquote>
+        <b>Key:</b> <code>group_vars</code> and <code>host_vars</code> auto-load by name; <code>roles/</code> are reused in playbooks; all code and secrets are version-controlled (with vault encryption as needed)!
+    </blockquote>
+
+    <div class="diagram">
+<svg width="940" height="170">
+  <!-- Boxes horizontally: inventory, playbook, roles, templates, vault -->
+  <rect x="40" y="66" rx="13" ry="13" width="110" height="42"
+        fill="#eaf6fd" stroke="#2288bb" stroke-width="2"/>
+  <text x="58" y="94" font-size="15.5" font-family="Segoe UI,Arial"
+        fill="#1875ad" font-weight="bold">
+    Inventory
+  </text>
+  <line x1="150" y1="87" x2="185" y2="87" stroke="#65c36e"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="192" y="95" font-size="18" font-family="Segoe UI,Arial" fill="#32a852">&gt;</text>
+  
+  <rect x="220" y="66" rx="13" ry="13" width="120" height="42"
+        fill="#e3fde5" stroke="#4abb46" stroke-width="2"/>
+  <text x="251" y="94" font-size="15.5" font-family="Segoe UI,Arial"
+        fill="#348e37" font-weight="bold">
+    Playbooks
+  </text>
+  <line x1="340" y1="87" x2="375" y2="87" stroke="#ddb054"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="382" y="95" font-size="18" font-family="Segoe UI,Arial" fill="#ddb054">&gt;</text>
+
+  <rect x="410" y="66" rx="13" ry="13" width="100" height="42"
+        fill="#fdaeae" stroke="#d2352c" stroke-width="2"/>
+  <text x="433" y="94" font-size="15.5" font-family="Segoe UI,Arial"
+        fill="#d2352c" font-weight="bold">
+    Roles
+  </text>
+  <line x1="510" y1="87" x2="545" y2="87" stroke="#7ed0f1"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="552" y="95" font-size="18" font-family="Segoe UI,Arial" fill="#7cabcdef">&gt;</text>
+  
+  <rect x="580" y="66" rx="13" ry="13" width="122" height="42"
+        fill="#fcfde8" stroke="#d9c22d" stroke-width="2"/>
+  <text x="601" y="94" font-size="15.5" font-family="Segoe UI,Arial"
+        fill="#b8a02d" font-weight="bold">
+    Templates
+  </text>
+  <line x1="702" y1="87" x2="737" y2="87" stroke="#43a96c"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <text x="744" y="95" font-size="18" font-family="Segoe UI,Arial" fill="#43a96c">&gt;</text>
+  
+  <rect x="780" y="66" rx="13" ry="13" width="110" height="42"
+        fill="#ffe6f5" stroke="#d9329e" stroke-width="2"/>
+  <text x="805" y="94" font-size="15.5" font-family="Segoe UI,Arial"
+        fill="#d9329e" font-weight="bold">
+    Vault/Secrets
+  </text>
+</svg>
+<span style="font-size:1.05em;color:#234e70;">
+     All pieces are linked via inventory &rarr; playbook &rarr; roles &rarr; templates &rarr; secrets.
+</span>
+</div>
+    <h2>Full Project Example 1: Multi-Tier Web Application Stack (AWS/GitHub Actions)</h2>
+    <h3>Project Goal</h3>
+    <ul>
+        <li>Provision EC2 and RDS resources</li>
+        <li>Configure network (VPC + subnets)</li>
+        <li>Set up security (users, SSH, firewalls, secrets)</li>
+        <li>Install and configure app servers, load balancer, MySQL, and application platform</li>
+        <li>Integrate CI/CD for code push/deploy</li>
+    </ul>
+    <h4>Project Directory Example</h4>
+    <pre>
+webapp-ansible/
+  inventories/
+    prod.yaml
+    stage.yaml
+  group_vars/
+    web.yaml         # web server config
+    db.yaml          # database config
+  host_vars/
+    web01.yaml
+    db01.yaml
+  playbooks/
+    site.yml         # master play
+    app_deploy.yml
+    db_setup.yml
+  roles/
+    awsec2/
+    awsvpc/
+    nginx/
+    mysql/
+    appserver/
+    users/
+  templates/
+    nginx.conf.j2
+    app.env.j2
+  vault/
+    prod-secrets.yaml
+    staging-secrets.yaml
+  .github/
+    workflows/
+      ci.yml
+  docs/
+  requirements.yml
+    </pre>
+    <h3>How It All Works (Workflow):</h3>
+    <ol>
+        <li><strong>Inventory</strong> points to prod or staging hosts (usually dynamic, from AWS EC2 plugin)</li>
+        <li><strong>Playbook</strong> <code>site.yml</code> includes roles for provisioning, app layers, users/secrets, etc.:
+<pre>
+- hosts: all
+  become: yes
+  roles:
+    - awsvpc
+    - awsec2
+    - users
+    - mysql
+    - nginx
+    - appserver
+</pre></li>
+        <li><strong>Templates/Vars:</strong> <code>nginx.conf.j2</code>, <code>app.env.j2</code>, etc. use <code>{{ inventory_hostname }}</code> and group/host vars for per-host config.</li>
+        <li><strong>Vault/Secrets</strong> (<code>vault/prod-secrets.yaml</code>): holds DB passwords, AWS keys (encrypted with Ansible Vault).</li>
+        <li><strong>GitHub Actions</strong> (<code>.github/workflows/ci.yml</code>): lints, tests with Molecule, then triggers deploy by running playbooks to provision or update stack.</li>
+    </ol>
+
+    <h3>Sample Inventory (Dynamic, Using AWS Plugin)</h3>
+    <pre>
+plugin: aws_ec2
+regions: [us-east-1]
+filters:
+  "tag:App": "webapp"
+  instance-state-name: running
+keyed_groups:
+  - key: tags['Environment']
+</pre>
+
+    <h3>Sample Template (nginx.conf.j2)</h3>
+    <pre>
+server {
+    listen 80;
+    server_name {{ inventory_hostname }};
+    location / {
+        proxy_pass http://{{ app_backend_ip }};
+    }
+    access_log /var/log/nginx/{{ inventory_hostname }}.access.log;
+}
+    </pre>
+    <h3>Sample Vault Secrets File (encrypted)</h3>
+    <pre>
+db_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          6539333264613235...
+slack_webhook: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          3534623461336662...
+    </pre>
+
+    <h3>Sample GitHub Actions Workflow</h3>
+    <pre>
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+      - name: Install Ansible and Dependencies
+        run: pip install ansible boto boto3 molecule[docker] ansible-lint
+      - name: Lint
+        run: |
+          ansible-lint .
+      - name: Molecule Test
+        run: |
+          molecule test
+      - name: Deploy to AWS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          ansible-playbook -i inventories/prod.yaml playbooks/site.yml --vault-password-file .vault_pass.txt
+    </pre>
+
+    <h2>Project Example 2: Compliance & Patch Management for 1000+ Hosts (AWX/Tower)</h2>
+    <ul>
+        <li>Runs regular patch/scan jobs on Linux fleet across datacenters</li>
+        <li>Automates vulnerability remediation, OS config, and security policy enforcement</li>
+        <li>Organizes hosts by role, region, owner, or critical group via smart inventories</li>
+        <li>Manages credentials and approvals via RBAC in AWX/Tower</li>
+    </ul>
+    <h4>Project Structure Overview</h4>
+    <pre>
+patch-management/
+  inventories/
+    prod.yaml       # AWX pulls this in as a source
+  group_vars/
+    baseline.yaml
+    patch.yaml
+  roles/
+    baseline/
+    patcher/
+    audit/
+  playbooks/
+    scan.yml
+    apply_patches.yml
+    audit_compliance.yml
+  .github/
+    workflows/checks.yml
+  docs/
+    </pre>
+    <h4>Workflow</h4>
+    <ul>
+        <li>AWX syncs inventories and credentials</li>
+        <li>Scheduled jobs run <code>scan.yml</code> daily and <code>apply_patches.yml</code> weekly</li>
+        <li>Notifications/alerts (Slack/email/ServiceNow) for failures and audit logging</li>
+        <li>Manual approval gates for patching production devices</li>
+        <li>Compliance job outputs summary to SIEM/central logging for auditors</li>
+    </ul>
+
+    <h2>Project Example 3: Kubernetes Bootstrap and App Deploy (GitOps)</h2>
+    <ul>
+        <li>Prepares VM or bare metal, installs k3s/minikube, provisions network/storage, then applies app configs via kubectl</li>
+        <li>Pulls k8s manifests and secrets from Git, triggers via GitHub Actions or GitLab CI on merge</li>
+        <li>Integrates with external vault for k8s secrets</li>
+    </ul>
+    <h4>Project Layout Example</h4>
+    <pre>
+k8s-bootstrap/
+  inventories/
+    prod.yaml
+    staging.yaml
+  group_vars/
+    k8s.yaml
+  roles/
+    k8s_base/
+    k8s_cluster/
+    cni/
+    app_deploy/
+    security/
+  playbooks/
+    site.yml
+    install_cluster.yml
+    deploy_apps.yml
+    rotate_secrets.yml
+  templates/
+    app-secret.yaml.j2
+    k3s.yaml.j2
+  vault/
+  .github/
+    workflows/
+      deploy.yml
+    </pre>
+    <h4>Workflow</h4>
+    <ol>
+        <li>GitHub PR triggers <code>deploy.yml</code> to lint/test and apply playbook if merge is approved</li>
+        <li>Ansible playbooks create cluster, deploy manifests, call <code>kubectl</code> via <code>community.kubernetes</code> modules</li>
+        <li>Secrets injected with templated <code>app-secret.yaml.j2</code> files</li>
+    </ol>
+    <h4>Sample App Secret Templating</h4>
+    <pre>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ app_name }}-secret
+type: Opaque
+stringData:
+  MYSQL_USER: "{{ mysql_user }}"
+  MYSQL_PASSWORD: "{{ vault_mysql_password }}"
+    </pre>
+    <div class="tip">
+        Want more GitHub project examples? Explore: 
+        <a href="https://github.com/geerlingguy/ansible-for-devops" target="_blank">Ansible for DevOps</a> |
+        <a href="https://github.com/ansible/ansible-examples" target="_blank">Official Examples</a> |
+        <a href="https://github.com/jonashackt/ansible-galaxy-examples" target="_blank">Galaxy Examples</a>
+    </div>
+    <h2>Best Practices for Real-World Project Workflows</h2>
+    <ul>
+        <li>Everything in Git, with PR-based review and automated CI/testing</li>
+        <li>Limit production inventories and vault keys to a small secure group</li>
+        <li>Tags, branching, and GitHub releases to track deployments/releases</li>
+        <li>Use documentation and diagrams in <code>docs/</code> for onboarding and compliance</li>
+        <li>Pin all dependencies with <code>requirements.yml</code> for roles/collections</li>
+        <li>Document variables, override locations, and sensitive data management thoroughly</li>
+    </ul>
+
+    <h2>References for More Project Examples</h2>
+    <ul>
+        <li><a href="https://github.com/ansible/ansible-examples" target="_blank">ansible/ansible-examples</a></li>
+        <li><a href="https://github.com/geerlingguy/ansible-for-devops" target="_blank">geerlingguy/ansible-for-devops</a></li>
+        <li><a href="https://github.com/ansible/awx-demo" target="_blank">awx-demo (AWX GitHub Example)</a></li>
+        <li><a href="https://www.jeffgeerling.com/ansible-book" target="_blank">Ansible for DevOps (Book)</a></li>
+        <li><a href="https://galaxy.ansible.com/browse/projects" target="_blank">Ansible Galaxy project browser</a></li>
+    </ul>
+    <div class="tip">
+        <b>
+        Real-world projects link all of Ansible as code, workflow, compliance, and cloud automation.<br>
+        Try forking public repos, customizing for your use case, and contributing back!
+        </b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Projects &amp; Workflows
+</footer>
+</body>
+</html>

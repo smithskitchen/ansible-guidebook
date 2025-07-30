@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Roles & Reusability</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Roles &amp; Reusability</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module4" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What are Roles in Ansible?</h2>
+    <p>
+        <b>Roles</b> are Ansible’s best practice mechanism for breaking complex automation into reusable, modular components. Roles group related tasks, variables, handlers, files, templates, and defaults together in a standardized file structure, making your automation scalable, maintainable, and shareable.
+    </p>
+    <ul>
+        <li><b>Reusability:</b> Define once, use everywhere—across playbooks or projects.</li>
+        <li><b>Organization:</b> Each automation area (e.g., "webserver", "db") gets its own folder tree with all resources in one place.</li>
+        <li><b>Portability:</b> Share roles via <a href="https://galaxy.ansible.com" target="_blank">Ansible Galaxy</a> or team/enterprise repositories.</li>
+    </ul>
+
+<div class="diagram">
+    <svg width="650" height="160" viewBox="0 0 650 160">
+        <!-- Playbook box -->
+        <rect x="30" y="40" width="200" height="80" rx="16" fill="#d9ebfa" stroke="#236398" stroke-width="2"/>
+        <text x="60" y="87" font-size="24" font-family="Segoe UI,Arial" fill="#234e70" font-weight="bold">Playbook</text>
+        <!-- Arrow -->
+        <line x1="230" y1="80" x2="390" y2="80" stroke="#236398" stroke-width="3" marker-end="url(#arrowhead)"/>
+        <text x="265" y="73" font-size="13" fill="#236398" font-family="Segoe UI">uses roles</text>
+        <!-- Role box -->
+        <rect x="410" y="28" width="200" height="104" rx="18" fill="#f6fed9" stroke="#a0c813" stroke-width="2"/>
+        <text x="430" y="56" font-size="18" fill="#739611" font-family="Segoe UI,Arial" font-weight="bold">Role: webserver/</text>
+        <text x="437" y="82" font-size="15" fill="#888">tasks/     handlers/   vars/</text>
+        <text x="437" y="102" font-size="15" fill="#888">files/     templates/  defaults/</text>
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#236398"/>
+            </marker>
+        </defs>
+    </svg>
+    <br>
+    <span style="font-size:1.08em;color:#234e70;">
+        <b>Roles</b> allow you to divide automation into clear, reusable building blocks.
+    </span>
+</div>
+
+    <h2>2. The Role Directory Structure</h2>
+    <p>Each role is self-contained in its own directory under <code>roles/</code>:</p>
+    <pre>
+roles/
+  webserver/
+    tasks/           # Main list of tasks to execute
+    handlers/        # Handlers, e.g., restart/reload services
+    files/           # Static files to transfer
+    templates/       # Jinja2 templates (dynamic config files)
+    vars/            # Variables with higher precedence
+    defaults/        # Default variables with lower precedence
+    meta/            # Role metadata (dependencies, etc.)
+    README.md
+    </pre>
+    <ul>
+        <li><b>Only <code>tasks/main.yml</code> is required</b> for a minimal role; other folders are optional but best practice for modular roles.</li>
+    </ul>
+    <blockquote>
+        <b>Best practice:</b> Use <code>ansible-galaxy init &lt;role_name&gt;</code> to scaffold role structure.
+    </blockquote>
+    
+    <h2>3. Writing and Using Roles in Playbooks</h2>
+    <h3>How to Create a Role</h3>
+    <pre>
+ansible-galaxy init webserver
+    </pre>
+    <p>This creates <code>roles/webserver/</code> with all standard folders and sample files.</p>
+    
+    <h3>Main Role Entry Point</h3>
+    <ul>
+        <li><code>tasks/main.yml</code>: main list of actions, just like playbook tasks.</li>
+        <li>Other <code>main.yml</code> files are entry points for handlers, vars, etc.</li>
+    </ul>
+    <pre>
+# roles/webserver/tasks/main.yml
+- name: Install web server
+  apt:
+    name: nginx
+    state: present
+
+- name: Deploy index.html
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+  notify: Reload nginx
+
+# roles/webserver/handlers/main.yml
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded
+    </pre>
+
+    <h3>Using a Role in Your Playbook</h3>
+    <pre>
+---
+- name: Setup web servers
+  hosts: web
+  become: yes
+  roles:
+    - webserver
+    </pre>
+    <ul>
+        <li>With just <code>roles:</code>, all default/main tasks, handlers, files, and templates in your role are automatically included and executed.</li>
+        <li>You can also use <code>vars:</code>, <code>vars_files:</code>, etc. in your playbook as before.</li>
+    </ul>
+
+    <h2>4. Variable Precedence, Scoping, and Overriding in Roles</h2>
+    <h3>Where Can Role Variables Be Set?</h3>
+    <table>
+        <tr>
+            <th>Scope/Location</th>
+            <th>Precedence</th>
+            <th>Typical Use</th>
+        </tr>
+        <tr>
+            <td><code>role/defaults/main.yml</code></td>
+            <td>Lowest</td>
+            <td>Safe defaults, easily overridden by user or inventory</td>
+        </tr>
+        <tr>
+            <td><code>role/vars/main.yml</code></td>
+            <td>Higher</td>
+            <td>Internal, not intended for override (rare)</td>
+        </tr>
+        <tr>
+            <td><code>group_vars/</code>, <code>host_vars/</code></td>
+            <td>High</td>
+            <td>Environment- or host-specific settings</td>
+        </tr>
+        <tr>
+            <td>Extra vars (<code>-e</code> on CLI)</td>
+            <td>Highest</td>
+            <td>Forcing variable values at runtime</td>
+        </tr>
+    </table>
+    <div class="tip">
+        As a rule: <b>role defaults</b> are for user-tweakable things, <b>role vars</b> are for role-internal "do not override" settings.
+    </div>
+    <h4>Example: Overriding Defaults</h4>
+    <pre>
+# roles/webserver/defaults/main.yml
+web_package: nginx
+
+# group_vars/web.yaml
+web_package: apache2
+
+# tasks/main.yml
+- name: Install web server
+  apt:
+    name: "{{ web_package }}"
+    state: present
+    </pre>
+    <blockquote>
+        Result: <code>apache2</code> will be installed on hosts in [web] group, not <code>nginx</code>, due to higher precedence of group_vars.
+    </blockquote>
+
+    <h2>5. Files, Templates, Handlers, and Meta in Roles</h2>
+    <p>
+        Each subdirectory has a clear purpose:
+    </p>
+    <ul>
+        <li><b>tasks/</b>: The main automation sequences. <i>Required.</i></li>
+        <li><b>handlers/</b>: Actions like restart/reload that you <b>notify</b> from tasks, run only if needed.</li>
+        <li><b>files/</b>: Static files to be copied with the <code>copy</code> module.</li>
+        <li><b>templates/</b>: Jinja2 templates—dynamically rendered configs/files.</li>
+        <li><b>vars/</b>: Role-specific variables (hard to override).</li>
+        <li><b>defaults/</b>: Default variables for easy customization.</li>
+        <li><b>meta/</b>: Metadata, dependencies on other roles (see below).</li>
+    </ul>
+    <h3>Using Files/Templates/Handlers</h3>
+    <pre>
+- name: Copy welcome page
+  copy:
+    src: welcome.html
+    dest: /var/www/html/index.html
+
+- name: Deploy nginx config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: Reload nginx
+    </pre>
+    <blockquote>
+        <b>Note:</b> <code>copy:</code> and <code>template:</code> resolve files relative to the role’s <code>files/</code> or <code>templates/</code> directory respectively.
+    </blockquote>
+
+    <h3>Role Dependencies: meta/main.yml</h3>
+    <pre>
+# roles/webserver/meta/main.yml
+dependencies:
+  - { role: common }
+  - { role: firewall, ports: [80, 443] }
+    </pre>
+    <p>
+        Specify other required roles (and their parameters).
+    </p>
+
+    <h2>6. Using Roles from Ansible Galaxy and Collections</h2>
+    <p>
+        The <b>Ansible Galaxy</b> online hub contains thousands of reusable roles for everything from MySQL to Kubernetes installs.
+    </p>
+    <pre>
+ansible-galaxy install geerlingguy.nginx
+    </pre>
+    <p>
+        Reference downloaded roles in your playbook’s <code>roles:</code> section as before.
+    </p>
+
+    <h2>7. Practical Exercise: Refactor a Web Server Playbook into a Role</h2>
+    <ol>
+        <li><b>Scaffold the role</b>:<br>
+            <pre>ansible-galaxy init webserver</pre>
+        </li>
+        <li><b>Move your install/configure playbook tasks into <code>roles/webserver/tasks/main.yml</code>:</b>
+            <pre>
+# roles/webserver/tasks/main.yml
+- name: Install web server
+  apt:
+    name: "{{ web_package }}"
+    state: present
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install web server (RHEL)
+  yum:
+    name: "{{ web_package }}"
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Copy HTML page
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+  notify: Reload web
+            </pre>
+        </li>
+        <li><b>Add handlers if needed</b> (e.g., restart/reload):
+            <pre>
+# roles/webserver/handlers/main.yml
+- name: Reload web
+  service:
+    name: "{{ web_package }}"
+    state: reloaded
+            </pre>
+        </li>
+        <li><b>Set defaults for reusability</b> (e.g., in <code>roles/webserver/defaults/main.yml</code>):
+            <pre>
+web_package: nginx
+            </pre>
+        </li>
+        <li><b>Call the role from your playbook:</b>
+            <pre>
+---
+- name: Setup websites
+  hosts: web
+  become: yes
+  roles:
+    - webserver
+            </pre>
+        </li>
+        <li><b>Run your playbook:</b>
+            <pre>
+ansible-playbook -i hosts site.yml
+            </pre>
+        </li>
+        <li>
+            <b>Result:</b> Now you can apply your playbook to any host/group, override <code>web_package</code> for Apache/Nginx, and reuse/extend the <code>webserver</code> role everywhere!
+        </li>
+    </ol>
+
+    <h2>8. Further Best Practices and Tips</h2>
+    <ul>
+        <li>Always use roles for scalable or shared automation—avoid putting lots of tasks in your <code>site.yml</code></li>
+        <li>Separate default config, files, templates, and handlers cleanly</li>
+        <li>Document your roles! (README.md, meta/description, comments)</li>
+        <li>Layer and compose roles to build complex systems from simple blocks</li>
+        <li>Use <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html" target="_blank">Ansible best practices</a> for directory structure</li>
+        <li>Test roles with <a href="https://molecule.readthedocs.io/en/latest/" target="_blank">Molecule</a> or similar tools for high-quality code</li>
+    </ul>
+
+    <h2>9. References & More Learning</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html" target="_blank">Official Roles Documentation</a></li>
+        <li><a href="https://galaxy.ansible.com/" target="_blank">Ansible Galaxy</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html" target="_blank">Ansible Best Practices (Dir Structure)</a></li>
+        <li><a href="https://molecule.readthedocs.io/en/latest/" target="_blank">Molecule (Role Testing Tool)</a></li>
+    </ul>
+
+    <div class="tip">
+        Start simple: Once you use roles, your automation will be modular, maintainable, and production-ready!
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Roles &amp; Reusability
+</footer>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Introduction & Setup (Beginner Level)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+		html { scroll-behavior: smooth; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.5em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f6faff;
+            color: #134f5c;
+            font-family: "Fira Mono", "Menlo", monospace;
+            font-size: 1em;
+            border: 1px solid #dde8f7;
+            border-radius: 6px;
+            padding: 1em;
+            margin: 2em auto;
+            white-space: pre;
+            text-align: center;
+            max-width: 600px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Beginner Level &ndash; Introduction & Setup</span></h1>
+</header>
+<main>
+    <nav>
+        <a href="index.html" title="Back to Book Index">&larr; Book Index</a>
+    </nav>
+
+    <h2>1. What is Ansible?</h2>
+    <p>
+        <b>Ansible</b> is an open-source, agentless IT automation software. Thousands of organizations use it for:
+    </p>
+    <ul>
+        <li><strong>Configuration Management:</strong> Install software and apply system settings consistently across servers.</li>
+        <li><strong>Application Deployment:</strong> Automate the installation and updating of applications.</li>
+        <li><strong>Orchestration:</strong> Coordinate processes/multiple servers, like rolling upgrades or cluster setups.</li>
+        <li><strong>Provisioning:</strong> Set up virtual machines and cloud infrastructure.</li>
+    </ul>
+    <blockquote>
+        <b>Why Ansible?</b> It is simple, secure, agentless (uses SSH), powerful, and has a huge ecosystem.
+    </blockquote>
+    <div class="diagram" title="Ansible architecture diagram">
+           +--------------------+
+           |   Control Node     |
+           | (Ansible Installed)|
+           +---------+----------+
+                     |
+         SSH/WinRM   |
+       Connections   v
+        +------------+-------------+
+        | Managed Nodes (Servers)  |  <--- (No agent required!)
+        +-------------------------+
+    </div>
+    <ul>
+        <li><strong>Control Node:</strong> Where you run Ansible commands/playbooks (your system or a management server).</li>
+        <li><strong>Managed Nodes:</strong> The servers/devices you automate; you only need SSH (Linux/Unix) or WinRM (Windows).</li>
+    </ul>
+
+    <h2>2. Understanding Ansible’s Core Concepts</h2>
+    <ul>
+        <li>
+            <b>Control Node:</b> The machine where you install and run Ansible. Can be your laptop, a jump host, or a CI/CD runner.
+        </li>
+        <li>
+            <b>Managed Node:</b> The remote servers or devices (on-prem or cloud) where Ansible performs automation tasks.
+        </li>
+        <li>
+            <b>Inventory File ("hosts"):</b> A text file (INI or YAML) listing your managed servers, organized into groups (e.g., web, db, prod). Ansible uses the inventory to know which servers to automate.
+        </li>
+        <li>
+            <b>Modules:</b> The plugins that actually perform the work (e.g., install software, copy files, run commands).
+        </li>
+        <li>
+            <b>Playbooks:</b> Human-readable files (in YAML) that define what tasks to run (using modules), in what order, and against which groups.
+        </li>
+    </ul>
+    <div class="tip">
+        <b>Biggest Advantages:</b> <br>
+        Agentless (uses SSH), simple language (YAML), powerful for both simple and complex automation needs.
+    </div>
+
+    <h2>3. YAML Basics for Ansible</h2>
+    <p>
+        YAML (YAML Ain't Markup Language) is the <b>only</b> language for writing Ansible playbooks. It is designed to be easy for non-programmers and programmers alike:
+    </p>
+    <ul>
+        <li><b>Indentation matters!</b> Use spaces (never tabs), usually 2 spaces per level.</li>
+        <li><b>Lists</b> use a dash <code>-</code></li>
+        <li><b>Key-Value Pairs</b> use a colon <code>key: value</code></li>
+        <li>You can nest lists/dictionaries for complex structures.</li>
+    </ul>
+    <pre>
+# Minimal YAML playbook example:
+---
+- name: Ping all hosts
+  hosts: all
+  tasks:
+    - name: Test connectivity
+      ping:
+    </pre>
+    <blockquote>
+        <b>Explanation:</b>
+        <ul>
+            <li><code>name:</code> is a label for the play.</li>
+            <li><code>hosts: all</code> means run on every host known in inventory.</li>
+            <li><code>tasks:</code> is a list of things to do, here just a <code>ping</code> test.</li>
+        </ul>
+    </blockquote>
+    <div class="tip">
+        <b>Useful YAML resources:</b> 
+        <a href="https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html" target="_blank">YAML in Ansible</a>,
+        <a href="https://yaml.org/" target="_blank">YAML Official</a>,
+        <a href="https://www.yamllint.com/" target="_blank">YAMLLint</a>
+    </div>
+
+    <h2>4. Installing Ansible (Quick Start)</h2>
+    <h3>On Ubuntu/Debian</h3>
+    <pre>
+sudo apt update
+sudo apt install software-properties-common -y
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible -y
+    </pre>
+    <h3>On Red Hat/CentOS/Rocky/Oracle Linux</h3>
+    <pre>
+sudo dnf install epel-release -y
+sudo dnf install ansible -y
+    </pre>
+    <h3>With pip (works everywhere Python is installed)</h3>
+    <pre>
+pip install --user ansible
+    </pre>
+    <div class="tip">Test install with: <code>ansible --version</code></div>
+
+    <h2>5. Setting Up SSH Access (Essential for Ansible!)</h2>
+    <ol>
+        <li>Generate an SSH Key (if you don't already have one):<br>
+            <pre>ssh-keygen -t rsa -b 4096</pre>
+            (Accept defaults by pressing Enter)
+        </li>
+        <li>Copy the SSH public key to each managed node (the server you want to automate), for example:<br>
+            <pre>ssh-copy-id user@192.168.1.100</pre>
+            (Replace <code>user</code> and <code>192.168.1.100</code> appropriately)
+        </li>
+    </ol>
+    <div class="diagram" title="SSH diagram">
++-------------+       SSH        +----------------+
+| Control     +-----------------&gt; Managed Node  |
+| Node        |  (public key)   | (no agent!)    |
++-------------+                 +----------------+
+    </div>
+    <div class="tip">
+        You can manage localhost for testing: Ansible doesn't need SSH for localhost if <code>ansible_connection=local</code> is set!
+    </div>
+
+    <h2>6. Creating Your First Inventory File</h2>
+    <h3>INI Format Example:</h3>
+    <pre>
+[local]
+localhost ansible_connection=local
+
+[web]
+192.168.1.10
+192.168.1.11
+    </pre>
+    <h3>YAML Format Example:</h3>
+    <pre>
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+    web1:
+      ansible_host: 192.168.1.10
+    web2:
+      ansible_host: 192.168.1.11
+    </pre>
+    <blockquote>
+        <b>Tip:</b> Save this as <code>hosts</code> (INI) or <code>hosts.yaml</code> in your project directory. Use <code>-i hosts</code> or <code>-i hosts.yaml</code> when running Ansible.
+    </blockquote>
+
+    <h2>7. Verifying Connections with the Ping Module</h2>
+    <p>
+        Now, test connectivity from your control node to all hosts in your inventory:
+    </p>
+    <pre>
+ansible all -i hosts -m ping
+    </pre>
+    <p>
+        <strong>Expected Output:</strong>
+        <pre>
+localhost | SUCCESS => { "changed": false, "ping": "pong" }
+192.168.1.10 | SUCCESS => { "changed": false, "ping": "pong" }
+192.168.1.11 | SUCCESS => { "changed": false, "ping": "pong" }
+        </pre>
+        If you see <code>SUCCESS</code> for each host: you’re ready to automate!
+    </p>
+    <div class="warn">
+        <b>If it does not work:</b>
+        <ul>
+            <li>Check your inventory file (<code>-i hosts</code>)</li>
+            <li>Test SSH with <code>ssh user@host</code></li>
+            <li>Make sure firewall/security group allows SSH!</li>
+            <li>Verify <code>ansible_user</code> and <code>ansible_host</code> settings for non-default usernames/hosts</li>
+        </ul>
+    </div>
+
+    <h2>8. Practical Exercises</h2>
+    <ul>
+        <li>Install Ansible on your workstation or VM.</li>
+        <li>Set up SSH key-based access from your control node to at least one managed node or localhost.</li>
+        <li>Create a simple <code>hosts</code> inventory file listing your server(s).</li>
+        <li>Run <code>ansible all -i hosts -m ping</code> and confirm successful output.</li>
+        <li>Optional: Try editing the inventory to add more hosts, test SSH, and explore <code>ansible <host> -m command -a "uptime"</code>.</li>
+    </ul>
+
+    <h2>9. Further Learning & Resources</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html" target="_blank">Ansible Installation Guide</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html" target="_blank">Introduction to Inventory</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html" target="_blank">Playbooks Introduction</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/index.html" target="_blank">Built-in Modules Index</a></li>
+        <li><a href="https://www.ansible.com/resources/get-started">Ansible Get Started</a></li>
+    </ul>
+
+    <div class="tip">
+        Next: Explore playbooks in-depth and learn to automate real-world tasks!
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Introduction & Setup
+</footer>
+</body>
+</html>

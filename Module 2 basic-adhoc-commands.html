@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Basic Ad-Hoc Commands</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.5em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            background: #f9fcff;
+            max-width: 700px;
+            padding: 12px 0;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Basic Ad-Hoc Commands</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module2" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What Are Ad-Hoc Commands?</h2>
+    <p>
+        <strong>Ad-hoc commands</strong> are one-line <b>Ansible CLI</b> instructions that allow you to perform quick, one-off operations on managed nodes without writing a playbook. They’re perfect for repetitive or emergency tasks (testing connectivity, patching, file management, and much more).
+    </p>
+
+    <div class="diagram">
+        <svg width="100%" height="132" viewBox="0 0 620 128" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="25" width="180" height="45" fill="#cae6fa" stroke="#246699" rx="12"/>
+            <text x="62" y="53" font-size="20" font-family="Segoe UI, Arial" fill="#234e70" font-weight="bold">Control Node</text>
+            <rect x="370" y="15" width="190" height="40" fill="#dbfadc" stroke="#169822" rx="10"/>
+            <rect x="370" y="74" width="190" height="40" fill="#fde5c7" stroke="#feae3c" rx="10"/>
+            <text x="395" y="42" font-size="17" fill="#0e4627">web01 (Managed Node)</text>
+            <text x="395" y="102" font-size="17" fill="#a05a1d">db01 (Managed Node)</text>
+            <polygon points="200,48 368,35" fill="none" stroke="#217bd1" stroke-width="3" marker-end="url(#arrowhead)"/>
+            <polygon points="200,48 368,94" fill="none" stroke="#feae3c" stroke-width="3" marker-end="url(#arrowhead2)"/>
+            <text x="215" y="40" font-size="14" fill="#217bd1">ansible all -m ping</text>
+            <text x="215" y="113" font-size="14" fill="#feae3c">ansible db -m shell -a "whoami"</text>
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#217bd1"/>
+                </marker>
+                <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#feae3c"/>
+                </marker>
+            </defs>
+        </svg>
+        <br>
+        <span style="font-size:.98em;color:#234e70;">
+            <b>How it works:</b> Run a command from the Control Node and Ansible executes it remotely on one or more Managed Nodes!
+        </span>
+    </div>
+
+    <h2>2. Anatomy of an Ad-Hoc Command</h2>
+    <pre>
+ansible &lt;pattern&gt; -i &lt;inventory&gt; -m &lt;module&gt; -a "&lt;arguments&gt;"
+    </pre>
+    <ul>
+        <li><b>pattern:</b> Which hosts (or group) to target from your inventory (e.g., <code>all</code>, <code>web</code>, <code>db[0,2]</code>)</li>
+        <li><b>-i &lt;inventory&gt;:</b> Path to your hosts/inventory file (optional if using default)</li>
+        <li><b>-m &lt;module&gt;:</b> The Ansible module to use (<code>ping</code>, <code>command</code>, <code>shell</code>, <code>file</code>, <code>copy</code>, etc.)</li>
+        <li><b>-a "&lt;arguments&gt;":</b> Arguments to module (varies by module; not needed for <code>ping</code>)</li>
+    </ul>
+    <div class="tip">
+        <b>Example:</b><br>
+        <code>ansible all -m ping</code><br>
+        Pings every host in your inventory using Ansible's <code>ping</code> module (not the OS ping).
+    </div>
+
+    <h2>3. Popular Ad-Hoc Modules</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Module</th>
+                <th>Purpose</th>
+                <th>Example Command</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>ping</code></td>
+                <td>Test connectivity (returns “pong” if Ansible can login)</td>
+                <td><code>ansible all -m ping</code></td>
+            </tr>
+            <tr>
+                <td><code>command</code></td>
+                <td>Run a command without shell features (safer, but no pipes, redirects)</td>
+                <td><code>ansible web -m command -a "uptime"</code></td>
+            </tr>
+            <tr>
+                <td><code>shell</code></td>
+                <td>Run a shell command (uses /bin/sh; supports pipes, redirects, etc.)</td>
+                <td><code>ansible db -m shell -a "cat /etc/passwd | grep admin"</code></td>
+            </tr>
+            <tr>
+                <td><code>copy</code></td>
+                <td>Copy files from control node to managed node</td>
+                <td><code>ansible all -m copy -a "src=./file.txt dest=/tmp/file.txt"</code></td>
+            </tr>
+            <tr>
+                <td><code>file</code></td>
+                <td>Manage files/directories (create, remove, set permissions/ownership)</td>
+                <td><code>ansible all -m file -a "path=/tmp/demo state=directory"</code></td>
+            </tr>
+            <tr>
+                <td><code>yum</code> or <code>apt</code></td>
+                <td>Install/remove packages (yum for RHEL/CentOS, apt for Debian/Ubuntu)</td>
+                <td><code>ansible all -m yum -a "name=nginx state=present"</code></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="tip">
+        See the complete list: <a href="https://docs.ansible.com/ansible/latest/collections/index.html" target="_blank">Ansible Module Index</a>
+    </div>
+
+    <h2>4. Common Ad-Hoc Command Examples</h2>
+    <h4>Test SSH Connectivity ("Ping")</h4>
+    <pre>
+ansible all -m ping
+    </pre>
+    <h4>Run a Simple Command</h4>
+    <pre>
+ansible web -m command -a "hostname"
+    </pre>
+    <h4>Get the Date from All Hosts</h4>
+    <pre>
+ansible all -m command -a "date"
+    </pre>
+    <h4>Create a Directory</h4>
+    <pre>
+ansible all -m file -a "path=/tmp/testdir state=directory mode=0755"
+    </pre>
+    <h4>Install NGINX (Debian/Ubuntu)</h4>
+    <pre>
+ansible all -m apt -a "name=nginx state=present update_cache=true" --become
+    </pre>
+    <h4>Install HTTPD (RedHat/CentOS)</h4>
+    <pre>
+ansible all -m yum -a "name=httpd state=present" --become
+    </pre>
+    <h4>Copy a File from Control Node to All Hosts</h4>
+    <pre>
+ansible all -m copy -a "src=./welcome.txt dest=/tmp/welcome.txt"
+    </pre>
+    <h4>Delete a Directory</h4>
+    <pre>
+ansible all -m file -a "path=/tmp/testdir state=absent"
+    </pre>
+
+    <div class="diagram">
+        <svg width="90%" height="105" viewBox="0 0 520 90">
+            <rect x="32" y="18" width="145" height="42" fill="#fff6d5" stroke="#d5ae56" rx="11"/>
+            <text x="60" y="45" font-size="18" font-family="Segoe UI, Arial" fill="#a87015" font-weight="bold">Ad-Hoc Command</text>
+            <rect x="355" y="10" width="135" height="36" fill="#d5f7e2" stroke="#14a557" rx="9"/>
+            <rect x="355" y="54" width="135" height="36" fill="#ecf8fe" stroke="#2599d5" rx="9"/>
+            <text x="372" y="33" font-size="15" fill="#126b38">Server A</text>
+            <text x="372" y="77" font-size="15" fill="#234e70">Server B</text>
+            <polygon points="177,39 355,28" fill="none" stroke="#a87015" stroke-width="3" marker-end="url(#arrow3)"/>
+            <polygon points="177,39 355,72" fill="none" stroke="#234e70" stroke-width="3" marker-end="url(#arrow4)"/>
+            <text x="200" y="24" font-size="13" fill="#a87015">Copy file</text>
+            <text x="200" y="80" font-size="13" fill="#234e70">Install pkg</text>
+            <defs>
+                <marker id="arrow3" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#a87015"/>
+                </marker>
+                <marker id="arrow4" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#234e70"/>
+                </marker>
+            </defs>
+        </svg>
+        <div style="font-size:1em;color:#234e70;">
+            Ad-hoc commands can target groups, individual hosts, or patterns simultaneously.
+        </div>
+    </div>
+
+    <h2>5. Hands-On Practical Exercises</h2>
+    <h3>Exercise 1: Create a Directory on All Hosts</h3>
+    <ol>
+        <li>Open your terminal on the control node.</li>
+        <li>Execute:
+            <pre>ansible all -m file -a "path=/opt/demo state=directory mode=0755"</pre>
+        </li>
+        <li>Verify on any host:
+            <pre>ssh user@host "ls -ld /opt/demo"</pre>
+        </li>
+    </ol>
+
+    <h3>Exercise 2: Install NGINX or HTTPD Across All Hosts</h3>
+    <ul>
+        <li><b>Debian/Ubuntu:</b>
+            <pre>ansible all -m apt -a "name=nginx state=present update_cache=yes" --become</pre>
+        </li>
+        <li><b>RHEL/CentOS:</b>
+            <pre>ansible all -m yum -a "name=httpd state=present" --become</pre>
+        </li>
+        <li>
+            <b>Test:</b>
+            <pre>ansible all -m shell -a "systemctl status nginx httpd"</pre>
+        </li>
+    </ul>
+
+    <div class="warn">
+        <b>Troubleshooting:</b>
+        <ul>
+            <li>If prompted, add <code>--become</code> for privilege escalation (like <code>sudo</code>). Configure <code>ansible_user</code> or use <code>-u</code> flag for the right SSH user.</li>
+            <li>If you get connectivity or permissions errors, check your SSH setup, inventory file, and the remote user’s sudo privileges.</li>
+        </ul>
+    </div>
+
+    <h2>6. Further Reading & Best Practices</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html" target="_blank">Ansible Ad-Hoc Command Guide</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/collections/index.html" target="_blank">All Ansible Modules</a></li>
+        <li>
+            <b>Best Practices:</b>
+            <ul>
+                <li>Ad-hoc is for quick, one-off tasks (use playbooks for repeatable or complex automation)</li>
+                <li>Always review module documentation with <code>ansible-doc &lt;module&gt;</code></li>
+                <li>Test on a subset of hosts or with safe modules before running commands that make changes everywhere!</li>
+            </ul>
+        </li>
+    </ul>
+
+    <div class="tip">
+        Next: Graduate from ad-hoc commands to writing and running your own organized Ansible Playbooks!
+    </div>
+
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Basic Ad-Hoc Commands
+</footer>
+</body>
+</html>

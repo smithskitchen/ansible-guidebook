@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Templates & Jinja2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Templates &amp; Jinja2</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module5" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What Are Jinja2 Templates in Ansible?</h2>
+    <p>
+        <b>Templates</b> in Ansible (powered by <b>Jinja2</b>) let you create files with dynamic, variable content—making automated deployments flexible and environment-aware. Jinja2 is a powerful templating engine enabling variable substitution, conditional logic, loops, and filters in file generation.
+    </p>
+    <ul>
+        <li>Templates end with <code>.j2</code> by convention (but this is not required)</li>
+        <li>You use the <code>template</code> module to process and deploy them</li>
+        <li>Templates can access all Ansible variables, facts, group/host vars, and more</li>
+    </ul>
+    <div class="diagram">
+        <svg width="95%" height="120">
+            <rect x="30" y="22" width="180" height="36" rx="10" fill="#f1e6fa" stroke="#704ba0"/>
+            <text x="57" y="46" font-size="18" fill="#441c6e" font-weight="bold">nginx.conf.j2 (template)</text>
+            <line x1="210" y1="40" x2="420" y2="40" stroke="#ab6cd1" stroke-width="3" marker-end="url(#triangle)"/>
+            <rect x="426" y="16" width="180" height="75" rx="17" fill="#f7fed9" stroke="#a0c813"/>
+            <text x="453" y="50" font-size="17" fill="#649211">nginx.conf (rendered)</text>
+            <text x="453" y="72" font-size="14" fill="#739611">uses Ansible variables!</text>
+            <defs>
+                <marker id="triangle" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#ab6cd1"/>
+                </marker>
+            </defs>
+        </svg>
+        <span style="font-size:1.09em;color:#234e70;">
+            Ansible <b>compiles</b> your template using variables and deploys the result!
+        </span>
+    </div>
+ 
+    <h2>2. Template Usage: The <code>template</code> Module</h2>
+    <p>
+        Use <code>template</code> in your playbook or role to process a template and deploy the rendered file to managed nodes:
+    </p>
+    <pre>
+- name: Deploy Nginx config from template
+  template:
+    src: nginx.conf.j2      # Path to template (relative, usually "templates/" dir in role)
+    dest: /etc/nginx/nginx.conf  # Destination on managed host
+    mode: 0644
+    owner: root
+    group: root
+    </pre>
+    <ul>
+        <li><code>src</code>: Local template file (on the control node, usually inside <code>templates/</code> dir in role/project)</li>
+        <li><code>dest</code>: File path on managed node where result will be placed</li>
+        <li>Other options: <code>owner</code>, <code>group</code>, <code>mode</code>, <code>backup</code>, etc.</li>
+    </ul>
+    <blockquote>
+        <b>Pro-tip:</b> Use handlers to reload/restart services if the template changes!
+    </blockquote>
+
+    <h2>3. Jinja2 Syntax Recap (Must Know!)</h2>
+    <table>
+        <tr>
+            <th>Expression</th>
+            <th>Purpose</th>
+            <th>Example</th>
+        </tr>
+        <tr>
+            <td><code>{{ variable }}</code></td>
+            <td>Variable substitution</td>
+            <td><code>{{ ansible_facts['hostname'] }}</code></td>
+        </tr>
+        <tr>
+            <td><code>{% if condition %} ... {% endif %}</code></td>
+            <td>Conditionals (if, elif, else)</td>
+            <td>
+<pre>{% if nginx_ssl %}listen 443 ssl;{% else %}listen 80;{% endif %}</pre></td>
+        </tr>
+        <tr>
+            <td><code>{% for x in list %} ... {% endfor %}</code></td>
+            <td>Loops</td>
+            <td>
+<pre>{% for domain in vhosts %}server_name {{ domain }};{% endfor %}</pre></td>
+        </tr>
+        <tr>
+            <td><code>{{ var | filter }}</code></td>
+            <td>Filters (change format, test content, etc.)</td>
+            <td><code>{{ mylist | join(', ') }}</code></td>
+        </tr>
+        <tr>
+            <td><code># ...</code></td>
+            <td>Comments (not rendered)</td>
+            <td><code># This is a comment</code></td>
+        </tr>
+    </table>
+
+    <h3>Common Jinja2 Filters</h3>
+    <ul>
+        <li><code>default</code>: If undefined, use fallback value <code>{{ myvar | default('foo') }}</code></li>
+        <li><code>join</code>: Turn a list into a string <code>{{ mylist | join(';') }}</code></li>
+        <li><code>upper/lower</code>: Change case <code>{{ hostname | upper }}</code></li>
+        <li><code>replace</code>: Replace substrings <code>{{ url | replace('http://', 'https://') }}</code></li>
+        <li><code>length</code>: Returns list or string length <code>{{ users | length }}</code></li>
+        <li>See full filter doc: <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank">Ansible filters</a></li>
+    </ul>
+
+    <h2>4. Advanced Jinja2: Conditional Logic and Loops in Templates</h2>
+    <h3>If/Else Logic Example</h3>
+    <pre>
+# nginx.conf.j2
+{% if ssl_enabled %}
+listen 443 ssl;
+ssl_certificate {{ ssl_cert }};
+ssl_certificate_key {{ ssl_key }};
+{% else %}
+listen 80;
+{% endif %}
+    </pre>
+
+    <h3>Loop Example (Create multiple vhosts)</h3>
+    <pre>
+{% for site in nginx_sites %}
+server {
+    server_name {{ site.server_name }};
+    root {{ site.root }};
+    {% if site.ssl %}
+    listen 443 ssl;
+    ssl_certificate {{ site.ssl_cert }};
+    ssl_certificate_key {{ site.ssl_key }};
+    {% else %}
+    listen 80;
+    {% endif %}
+}
+{% endfor %}
+    </pre>
+
+    <h3>Using <code>with_items</code> for Host-Specific Vhosts</h3>
+    <pre>
+# playbook.yaml
+- name: Deploy virtual hosts
+  hosts: web
+  vars:
+    nginx_sites:
+      - server_name: www.example.com
+        root: /var/www/example
+        ssl: true
+        ssl_cert: /etc/ssl/certs/example.crt
+        ssl_key: /etc/ssl/private/example.key
+      - server_name: www.site2.com
+        root: /var/www/site2
+        ssl: false
+  tasks:
+    - name: Setup nginx vhosts
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ item.server_name }}.conf
+      loop: "{{ nginx_sites }}"
+    </pre>
+    <blockquote>
+        <b>Result:</b> Each host gets separate config files for each vhost in <code>nginx_sites</code>.
+    </blockquote>
+
+    <h2>5. Deploying Templated Files per Host or Group</h2>
+    <p>
+        Variables can be automatically loaded per-host or per-group from <code>host_vars/</code> and <code>group_vars/</code>, or passed in via playbook <code>vars</code>.
+    </p>
+    <pre>
+# Example: host_vars/web1.yaml
+nginx_sites:
+  - server_name: web1.example.com
+    root: /srv/web1
+    ssl: true
+    ssl_cert: /etc/ssl/web1.crt
+    ssl_key: /etc/ssl/web1.key
+
+# The playbook will substitute these per host during template rendering.
+    </pre>
+    <div class="tip">
+        <b>Best Practice:</b> Use <code>group_vars</code> for shared config, <code>host_vars</code> for machine-specific config.
+    </div>
+
+    <h2>6. Practical Exercise: Create and Deploy Jinja2 Templates for Nginx Vhosts</h2>
+    <h3>Step-by-Step</h3>
+    <ol>
+        <li>
+            <b>1. Define host/group variables (host_vars/web1.yaml, host_vars/web2.yaml):</b>
+            <pre>
+nginx_sites:
+  - server_name: web1.example.com
+    root: /srv/web1
+    ssl: true
+    ssl_cert: /etc/ssl/web1.crt
+    ssl_key: /etc/ssl/web1.key
+            </pre>
+        </li>
+        <li>
+            <b>2. Create your Jinja2 template (templates/nginx.conf.j2):</b>
+            <pre>
+server {
+    server_name {{ server_name }};
+    root {{ root }};
+    {% if ssl %}
+    listen 443 ssl;
+    ssl_certificate {{ ssl_cert }};
+    ssl_certificate_key {{ ssl_key }};
+    {% else %}
+    listen 80;
+    {% endif %}
+}
+            </pre>
+        </li>
+        <li>
+            <b>3. Write your playbook:</b>
+            <pre>
+---
+- name: Deploy nginx vhosts
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+      when: ansible_facts['os_family'] == "Debian"
+    - name: Deploy nginx vhost configs
+      template:
+        src: nginx.conf.j2
+        dest: "/etc/nginx/sites-enabled/{{ item.server_name }}.conf"
+      loop: "{{ nginx_sites }}"
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+            </pre>
+        </li>
+        <li>
+            <b>4. Run the playbook:</b>
+            <pre>
+ansible-playbook -i hosts deploy_nginx.yaml
+            </pre>
+        </li>
+        <li>
+            <b>Result:</b> Each host gets its own vhost config files dynamically generated and deployed.
+        </li>
+    </ol>
+
+    <h2>7. Troubleshooting and Best Practices</h2>
+    <ul>
+        <li>Always check your templating variables <b>exist</b> and are spelled correctly</li>
+        <li>Use <b>ansible-playbook --check</b> (“dry run”) to view changed files</li>
+        <li>Test your generated config (e.g. <code>nginx -t</code> on the target host)</li>
+        <li>Remember: loops in <code>tasks</code> <b>and</b> inside the template file work together but variables differ</li>
+        <li>Use <code>{{ var | default('fallback') }}</code> for safe template rendering</li>
+        <li>Template files are best kept in <code>templates/</code> in roles or project root</li>
+        <li>Add lots of <b>comments</b> (<code>#</code>) to templates for future maintainers</li>
+    </ul>
+    <div class="warn">
+        <b>Common Issues:</b>
+        <ul>
+            <li>Undefined variables (will cause errors: <code>template error: variable ... is undefined</code>)</li>
+            <li>YAML indentation errors in multi-line template files</li>
+            <li>For complex structures, use debug tasks (<code>debug: var=somevar</code>) to check variable content</li>
+        </ul>
+    </div>
+
+    <h2>8. Further Learning & References</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_templating.html" target="_blank">Official Ansible Playbook Templating</a></li>
+        <li><a href="https://jinja.palletsprojects.com/en/3.0.x/templates/" target="_blank">Jinja2 Template Documentation</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank">Ansible Filters Reference</a></li>
+    </ul>
+
+    <div class="tip">
+        <b>Templates and Jinja2 are Ansible's secret sauce for dynamic, environment-specific, and production-safe automation!<br>
+        Master these, and you can automate ANY config deployment or app rollout scenario.</b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Templates &amp; Jinja2
+</footer>
+</body>
+</html>

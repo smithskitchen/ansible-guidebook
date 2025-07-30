@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Inventories</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.5em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.2em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.4em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        blockquote {
+            border-left: 3px solid #cce6ff;
+            padding-left: 1em;
+            color: #234e70;
+            margin: 1.5em 0;
+            font-style: italic;
+            background: #f6faff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br><span style="font-size:0.7em;">Inventories in Depth</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module3" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. What is an Ansible Inventory?</h2>
+    <p>
+        The <strong>inventory</strong> is a fundamental concept in Ansible: it is the <strong>source of truth</strong> about the hosts and groups on which your automation will run. The inventory tells Ansible <em>what to manage</em>, <em>how to connect</em>, and can be a simple file or a dynamically generated source.
+    </p>
+    <ul>
+        <li>An inventory can describe servers, network devices, cloud instances, and more.</li>
+        <li>Inventories support host and group variables for sophisticated configuration.</li>
+        <li>The default inventory file location is <code>/etc/ansible/hosts</code>, but it’s common practice to keep <code>hosts</code> files in your project directory.</li>
+    </ul>
+
+    <h2>2. Types of Inventories</h2>
+    <ol>
+        <li>
+            <b>Static Inventory:</b> A fixed file (INI or YAML) listing hosts and groups. Easiest to get started and suitable for small, fixed environments.
+        </li>
+        <li>
+            <b>Dynamic Inventory:</b> Created “on the fly” using scripts or plugins that query sources like cloud providers (e.g., AWS, Azure, GCP, Oracle Cloud, VMware, OpenStack, etc.), CMDBs, or your own databases. Enables up-to-date automation in dynamic/cloud-native environments.
+        </li>
+        <li>
+            <b>Multiple Inventories:</b> You can combine different inventory sources using YAML and the <code>inventory</code> plugin system.
+        </li>
+    </ol>
+
+    <h2>3. Static Inventory File (INI Format)</h2>
+    <p>
+        The classic format: each host (optionally grouped) on its own line, with variables assigned inline or in a separate stanza.
+    </p>
+    <pre>
+[web]
+web1.example.com
+web2.example.com
+
+[db]
+db1.example.com ansible_user=postgres
+db2.example.com
+
+[all:vars]
+ansible_port=22
+ansible_python_interpreter=/usr/bin/python3
+    </pre>
+    <h4>Explanation:</h4>
+    <ul>
+        <li><b>[groupname]</b> creates a logical group of hosts.</li>
+        <li>Hosts can have variables defined next to the hostname.</li>
+        <li><b>[all:vars]</b> sets variables for every host.</li>
+        <li>The <code>ansible_</code> prefix refers to “connection variables” (e.g., user, port, Python interpreter location).</li>
+    </ul>
+
+    <h2>4. Static Inventory in YAML Format</h2>
+    <p>YAML inventories are more expressive, easier to extend, and allow for shallow or deep nesting:</p>
+    <pre>
+all:
+  vars:
+    ansible_port: 22
+  children:
+    web:
+      hosts:
+        web1.example.com:
+        web2.example.com:
+    db:
+      hosts:
+        db1.example.com:
+          ansible_user: postgres
+        db2.example.com:
+    </pre>
+    <ul>
+        <li><b>all</b> is the top-level group.</li>
+        <li><b>children</b> creates nested groups.</li>
+        <li><b>hosts</b> is a dictionary; each key is a managed node.</li>
+        <li>Host variables can be assigned beneath the hostname.</li>
+    </ul>
+    <div class="tip">
+        Modern Ansible supports both INI and YAML inventory files.<br>
+        <b>YAML is recommended</b> for complex projects.
+    </div>
+
+    <h2>5. How to Use an Inventory</h2>
+    <ul>
+        <li>
+            By default, Ansible looks for <code>/etc/ansible/hosts</code>.
+        </li>
+        <li>
+            Use <code>-i</code> to specify a custom file:
+            <pre>ansible-inventory -i myhosts.yaml --list</pre>
+            <pre>ansible all -i myhosts.yaml -m ping</pre>
+        </li>
+        <li>
+            <b>Directory-based inventory:</b> You can use a folder, where each file (or plugin) defines part of the inventory:
+            <pre>ansible-playbook -i inventory_dir/ playbook.yaml</pre>
+        </li>
+    </ul>
+
+    <h2>6. Host and Group Variables</h2>
+    <h4>Assigning Host Variables</h4>
+    <pre>
+[web]
+web1 ansible_host=192.168.1.10 ansible_user=ubuntu
+
+[db]
+db1 ansible_host=10.0.0.20 ansible_user=postgres
+    </pre>
+    <ul>
+        <li><code>ansible_host</code>: override DNS; connect to this IP or FQDN</li>
+        <li><code>ansible_user</code>: which user to SSH as</li>
+        <li>Other variables (custom or module-specific) can be set similarly</li>
+    </ul>
+    <h4>Group Variables (INI)</h4>
+    <pre>
+[web:vars]
+nginx_port=8080
+    </pre>
+    <h4>Group Variables (YAML)</h4>
+    <pre>
+web:
+  hosts:
+    web1:
+    web2:
+  vars:
+    nginx_port: 8080
+    enable_ssl: true
+    </pre>
+    <div class="tip">Group and host variables let you control configuration granularity and keep playbooks clean and DRY.</div>
+
+    <h2>7. Host Patterns and Ranges</h2>
+    <ul>
+        <li>Host patterns let you target subsets of your inventory:</li>
+    </ul>
+    <pre>
+ansible web -m ping                  # All hosts in web group
+ansible 'web:&db' -m ping            # Hosts in both web and db group (intersection)
+ansible 'web:!db' -m ping            # Hosts in web but NOT in db
+ansible 'web[01:05]' -m ping         # web01, web02, web03, web04, web05
+    </pre>
+    <p>
+        Patterns may use group names, hostnames, wildcards, exclusions, and combinations. See the <a href="https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html" target="_blank">Ansible pattern docs</a> for more.
+    </p>
+
+    <h2>8. Dynamic Inventory</h2>
+    <p>
+        Dynamic inventories allow you to source the current state of your infrastructure from a live system (cloud, inventory service, etc.).
+    </p>
+    <ul>
+        <li>Provided via executable scripts or <b>inventory plugins</b> included with Ansible.</li>
+        <li>Common integrations: AWS, Azure, GCP, OpenStack, VMware, Oracle Cloud, Kubernetes.</li>
+        <li>Output must be JSON or YAML and have the correct structure.</li>
+    </ul>
+    <p>Example: using an AWS EC2 inventory plugin (YAML config):</p>
+    <pre>
+plugin: aws_ec2
+regions:
+  - us-west-2
+filters:
+  instance-state-name: running
+hostnames:
+  - dns-name
+keyed_groups:
+  - key: tags.Name
+    prefix: name
+    </pre>
+    <pre>
+ansible-inventory -i aws_ec2.yaml --list
+ansible all -i aws_ec2.yaml -m ping
+    </pre>
+    <p>
+        For custom dynamic sources, write a script that outputs JSON in the <a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_inventory.html#developing-inventory-scripts" target="_blank">required structure</a>.
+    </p>
+    <div class="tip">
+        Dynamic inventory is essential for cloud automation, auto-scaling groups, and never managing infrastructure by hand.
+    </div>
+
+    <h2>9. Inventory Directory (Multi-Inventory)</h2>
+    <p>
+        Ansible can combine inventories from a directory. Each file (YAML, INI, plugin config, or script) merges as part of the overall inventory.
+    </p>
+    <pre>
+project/
+  inventory/
+    cloud.yaml
+    db.ini
+    group_vars/
+    host_vars/
+  playbooks/
+  roles/
+  ...
+    </pre>
+    <ul>
+        <li>Each file in <code>inventory/</code> is loaded as a source.</li>
+        <li>Place <code>group_vars/</code> and <code>host_vars/</code> directories within the inventory directory for variable scoping.</li>
+    </ul>
+
+    <h2>10. Special files: <code>group_vars</code> and <code>host_vars</code></h2>
+    <p>
+        <code>group_vars/</code> and <code>host_vars/</code> directories let you define variables for a specific group or host, in YAML or INI format.
+    </p>
+    <pre>
+inventory/
+  group_vars/
+    web.yaml         # Vars for [web] group
+    all.yaml         # Vars for all hosts
+  host_vars/
+    web1.yaml        # Vars for web1 only
+  hosts              # INI or YAML inventory file
+    </pre>
+
+    <h2>11. Inventory Plugin References</h2>
+    <ul>
+        <li><b>AWS EC2</b>: <code>aws_ec2</code></li>
+        <li><b>Azure</b>: <code>azure_rm</code></li>
+        <li><b>GCP</b>: <code>gcp_compute</code></li>
+        <li><b>OpenStack</b>: <code>openstack</code></li>
+        <li><b>VMware</b>: <code>vmware_vm_inventory</code></li>
+        <li><b>Kubernetes</b>: <code>k8s</code></li>
+        <li>...and many more. See <a href="https://docs.ansible.com/ansible/latest/plugins/inventory.html" target="_blank">Ansible Inventory Plugins</a>.</li>
+    </ul>
+
+    <h2>12. Best Practices & Tips</h2>
+    <ul>
+        <li>
+            <b>Use YAML for new projects</b>: It’s less error-prone, more readable, and supports advanced structures.
+        </li>
+        <li>
+            <b>Leverage group/host variables</b> for reusability and clarity.
+        </li>
+        <li>
+            <b>Version control your inventory</b> for repeatable, auditable automation.
+        </li>
+        <li>
+            <b>Keep separate inventories</b> for prod vs staging/dev environments.
+        </li>
+        <li>
+            <b>Use dynamic inventory for cloud or frequently changing hosts.</b>
+        </li>
+        <li>
+            <b>Document your groups and structure</b> for team maintainability.</li>
+    </ul>
+
+    <h2>13. Common Troubleshooting</h2>
+    <ul>
+        <li><b>Host unreachable?</b> Check <code>ansible_host</code>, <code>ansible_user</code>, SSH keys, and network connectivity.</li>
+        <li><b>“No hosts matched”?</b> Verify group names, patterns, and inventory file paths.</li>
+        <li><b>Variables not applied?</b> Check for precedence, file name typos, and correct <code>group_vars</code>/<code>host_vars</code> placement.</li>
+        <li><b>Dynamic inventory issues?</b> Run scripts/plugins manually with <code>--list</code> to debug output and permissions.</li>
+        <li><b>Inventory parsing errors?</b> Validate your YAML/INI syntax with <a href="https://www.yamllint.com/" target="_blank">yamllint</a> or <a href="https://ini-to-yaml.com/" target="_blank">INI/YAML tools</a>.</li>
+    </ul>
+    <div class="warn">
+        <b>Pro Tip:</b> Always check your effective inventory with:<br>
+        <code>ansible-inventory -i myinventory.yaml --list</code>
+    </div>
+
+    <h2>14. Key Resources</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html" target="_blank">Official Ansible Inventory Guide</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/plugins/inventory.html" target="_blank">Ansible Inventory Plugins Reference</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html" target="_blank">Ansible Host Patterns</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_inventory.html" target="_blank">Developing Dynamic Inventory Scripts</a></li>
+    </ul>
+
+    <div class="tip">
+        <strong>Summary:</strong> Mastery of Ansible inventories unlocks powerful, scalable automation for environments large and small. Invest time up front to design your inventory for clarity, reusability, and continuous integration.
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Inventories
+</footer>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Custom Modules & Contributing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Custom Modules &amp; Contributing</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module12" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Why Write a Custom Module?</h2>
+    <ul>
+        <li>When core and community modules don't cover your use case</li>
+        <li>Integrate with custom or in-house APIs, devices, or legacy systems</li>
+        <li>Standardize and reunite “shell hacking” as true idempotent automation</li>
+        <li>Contribute features or fixes to open source roles/collections (Ansible Galaxy or upstream)</li>
+    </ul>
+<div class="diagram">
+<svg width="880" height="85">
+  <!-- Box 1 -->
+  <rect x="20" y="20" rx="13" ry="13" width="215" height="44"
+        fill="#eaf6fd" stroke="#2288bb" stroke-width="2"/>
+  <text x="45" y="48" font-size="16" font-family="Segoe UI,Arial"
+        fill="#1875ad" font-weight="bold">
+    Custom Module (.py)
+  </text>
+  <!-- Dashes between 1 and 2 (now OUTSIDE of box) -->
+  <line x1="245" y1="42" x2="285" y2="42" stroke="#65c36e"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <!-- '>' -->
+  <text x="293" y="48" font-size="18" font-family="Segoe UI,Arial" fill="#32a852">&gt;</text>
+  <!-- Box 2 -->
+  <rect x="325" y="20" rx="13" ry="13" width="210" height="44"
+        fill="#e3fde5" stroke="#4abb46" stroke-width="2"/>
+  <text x="355" y="48" font-size="16" font-family="Segoe UI,Arial"
+        fill="#348e37" font-weight="bold">
+    Custom Logic / API
+  </text>
+  <!-- Dashes between 2 and 3 (OUTSIDE of box) -->
+  <line x1="535" y1="42" x2="575" y2="42" stroke="#ddb054"
+        stroke-width="3" stroke-dasharray="7,7"/>
+  <!-- '>' -->
+  <text x="583" y="48" font-size="18" font-family="Segoe UI,Arial" fill="#ddb054">&gt;</text>
+  <!-- Box 3 -->
+  <rect x="625" y="20" rx="13" ry="13" width="170" height="44"
+        fill="#fff7df" stroke="#d2ae48" stroke-width="2"/>
+  <text x="655" y="48" font-size="16" font-family="Segoe UI,Arial"
+        fill="#be972c" font-weight="bold">
+    Playbook/Role
+  </text>
+</svg>
+<br>
+<span style="font-size:1.04em;color:#234e70;">
+    Custom modules unlock advanced automation and can be <b>shared with the whole Ansible ecosystem!</b>
+</span>
+</div>
+
+    <h2>2. Anatomy of an Ansible Module</h2>
+    <ol>
+        <li>Written in Python, typically (can also be in bash or other languages with correct I/O)</li>
+        <li>Inputs are parameters (as YAML or via play)</li>
+        <li>Output is a JSON structure (using the <code>exit_json()</code> or <code>fail_json()</code> helper)</li>
+        <li>Idempotence is best-practice: changes are only reported if actual work is done</li>
+        <li>Uses <code>from ansible.module_utils.basic import AnsibleModule</code> as an API</li>
+    </ol>
+    <blockquote>
+        Full best-practice: <a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html" target="_blank">Developing Modules Guide</a>
+    </blockquote>
+
+    <h2>3. How to Write a Simple Python Module</h2>
+    <ol>
+        <li>
+            <strong>Create a file in <code>library/</code> at your project root:</strong>
+            <pre>
+mkdir -p library
+# Create (e.g.) hello_module.py in the "library" directory</pre>
+        </li>
+        <li>
+            <strong>Minimal working example:</strong>
+<pre>
+#!/usr/bin/python
+
+from ansible.module_utils.basic import AnsibleModule
+
+def run_module():
+    module_args = dict(
+        name=dict(type='str', required=True)
+    )
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True
+    )
+    name = module.params['name']
+    result = dict(
+        changed=False,
+        message=f"Hello, {name}!"
+    )
+    if module.check_mode:
+        module.exit_json(**result)
+    result['changed'] = True
+    module.exit_json(**result)
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
+    main()
+</pre>
+        </li>
+        <li>
+            <strong>Use the custom module in a playbook:</strong>
+<pre>
+---
+- hosts: localhost
+  tasks:
+    - name: Say Hello via Custom Module
+      hello_module:
+        name: "Ansible User"
+</pre>
+            <ul>
+                <li>Reference as <code>hello_module</code> (the filename, without .py) after putting it in <code>library/</code></li>
+            </ul>
+        </li>
+    </ol>
+    <blockquote>
+        This module takes a <code>name</code> param and returns a message. Try running it with <code>ansible-playbook</code>!
+    </blockquote>
+
+    <h2>4. Handling Arguments, Returning Data, and Idempotence</h2>
+    <ul>
+        <li><b>module_args:</b> Dict mapping input variable names to types, choices, required, defaults, etc.</li>
+        <li><b>result dict:</b> Output fields (<code>changed</code>, <code>failed</code>, any custom fields)</li>
+        <li><b>exit_json()</b>: Proper success return (<code>changed</code> should reflect real work done!)</li>
+        <li><b>fail_json()</b>: Proper error/failure return (for any issues/exception handling)</li>
+        <li><b>supports_check_mode:</b> Allow "dry runs" for safe previews</li>
+    </ul>
+    <pre>
+result = dict(changed=False, failed=False, foo="bar")
+if error_condition:
+    module.fail_json(msg="Something went wrong", **result)
+module.exit_json(**result)
+    </pre>
+    <blockquote>
+        <b>Idempotency tip:</b> Only report <code>changed=True</code> if real work was performed. Use <code>stat</code> module or internal checks before acting.
+    </blockquote>
+
+    <h2>5. Practical Example: File Touch (Custom idempotent "touch" module)</h2>
+    <h4>Create <code>library/file_touch.py</code>:</h4>
+    <pre>
+#!/usr/bin/python
+
+import os
+from ansible.module_utils.basic import AnsibleModule
+
+def run_module():
+    module_args = dict(
+        path=dict(type='str', required=True),
+    )
+    module = AnsibleModule(argument_spec=module_args)
+    path = module.params['path']
+    result = dict(changed=False, path=path)
+    if not os.path.exists(path):
+        open(path, "a").close()
+        result['changed'] = True
+        result['msg'] = f"File {path} was created"
+    else:
+        result['msg'] = f"File {path} already exists"
+    module.exit_json(**result)
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
+    main()
+    </pre>
+    <h4>Use in your playbook:</h4>
+    <pre>
+- hosts: localhost
+  tasks:
+    - name: Touch file by custom module
+      file_touch:
+        path: /tmp/testfile
+    </pre>
+    <blockquote>
+        <b>Result:</b> Will only show <code>changed: true</code> the first time (idempotent).
+    </blockquote>
+
+    <h2>6. Module Best Practices</h2>
+    <ul>
+        <li>Always provide accurate <code>changed</code> detection for idempotency</li>
+        <li>Add <code>check mode</code> support (for <code>--check</code> or dry-run behavior)</li>
+        <li>Handle exceptions gracefully and use <code>fail_json()</code> for errors</li>
+        <li>Add docs in the module’s top-level docstring (<a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_documenting.html" target="_blank">see guidelines</a>)</li>
+        <li>Test thoroughly—both inline (<code>if __name__ == '__main__'</code>) and via playbooks</li>
+        <li>For advanced modules: integrate with <code>module_utils/</code> for reusable code, external libraries, or shared validation</li>
+    </ul>
+
+    <h2>7. Contributing to Ansible Core, Collections & Galaxy</h2>
+    <ol>
+        <li><b>For core or popular collections:</b>
+            <ul>
+                <li><a href="https://github.com/ansible/ansible" target="_blank">Ansible GitHub</a> for core modules</li>
+                <li><a href="https://github.com/ansible-collections/" target="_blank">Collection repositories</a></li>
+                <li><a href="https://galaxy.ansible.com/docs/contributing/submitting_collections.html" target="_blank">Galaxy contribution guide</a></li>
+            </ul>
+        </li>
+        <li>
+            <b>Contribution Workflow:</b>
+            <ul>
+                <li>Fork the repo and create a new branch for your change</li>
+                <li>Add your module/fix with a clear <code>CHANGELOG</code> and tests if applicable</li>
+                <li>Run <code>ansible-test</code> to validate (for core modules)</li>
+                <li>Open a PR (Pull Request) on GitHub with summary/motivation</li>
+                <li>Participate in code review, respond to feedback</li>
+            </ul>
+        </li>
+        <li>
+            <b>Report Bugs or Request Features:</b>  
+            <ul>
+                <li>Open an issue on the relevant collection/core repo (with all diagnostics/examples)</li>
+                <li>Include details, steps to reproduce, and playbook/module sample</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>8. Practical Exercise: Write and Use Your Own Custom Module</h2>
+    <ol>
+        <li>
+            Write <code>reverse_string.py</code> in <code>library/</code>:
+            <pre>
+#!/usr/bin/python
+
+from ansible.module_utils.basic import AnsibleModule
+
+def run_module():
+    module_args = dict(
+        text=dict(type='str', required=True)
+    )
+    module = AnsibleModule(argument_spec=module_args)
+    text = module.params['text']
+    reversed_text = text[::-1]
+    result = dict(changed=False, reversed=reversed_text)
+    module.exit_json(**result)
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
+    main()
+            </pre>
+        </li>
+        <li>
+            Use in a playbook:
+            <pre>
+- hosts: localhost
+  tasks:
+    - name: Reverse a string using custom module
+      reverse_string:
+        text: "Ansible"
+      register: out
+    - debug:
+        msg: "Reversed: {{ out.reversed }}"
+            </pre>
+        </li>
+        <li>
+            Run it:
+            <pre>ansible-playbook custom-reverse-demo.yml</pre>
+        </li>
+    </ol>
+
+    <h2>9. References & Further Reading</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_modules.html" target="_blank">Developing Modules (Official)</a></li>
+        <li><a href="https://github.com/ansible/ansible" target="_blank">Ansible Core Source (GitHub)</a></li>
+        <li><a href="https://galaxy.ansible.com/docs/contributing/index.html" target="_blank">Galaxy Contribution Guide</a></li>
+        <li><a href="https://github.com/ansible/ansible/pulls" target="_blank">Submit a Pull Request (Ansible Core)</a></li>
+    </ul>
+
+    <div class="tip">
+        <b>
+        Writing custom modules and contributing upstream is how you shape the future of the Ansible ecosystem—and build reusable automation for years to come!
+        </b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Custom Modules &amp; Contributing
+</footer>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ansible Guidebook: Strategies, Lookups, and Plugins</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fcfcfd;
+            color: #222;
+            margin: 0;
+            padding: 0 0 50px 0;
+        }
+        header, footer {
+            text-align: center;
+            background: #234e70;
+            color: #fff;
+            padding: 1em 0;
+        }
+        main {
+            max-width: 950px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 2.7em 2.2em;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(64,64,64,0.09);
+        }
+        h1, h2, h3, h4 {
+            color: #234e70;
+        }
+        h1 {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 0.3em;
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 2em;
+            font-size: 1.4em;
+            border-left: 4px solid #234e70;
+            padding-left: 10px;
+        }
+        h3 {
+            margin-top: 1.5em;
+            font-size: 1.15em;
+            color: #3d6ba7;
+        }
+        h4 {
+            margin: 1.1em 0 0.5em 0;
+        }
+        ul, ol {
+            margin: 1em 0 1em 2em;
+        }
+        code, pre {
+            background: #f4f7fa;
+            border-radius: 5px;
+            font-family: "Fira Mono", "Consolas", monospace;
+            font-size: 1em;
+        }
+        pre {
+            padding: 1em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 2em 0;
+        }
+        table th, table td {
+            border: 1px solid #e2e6ea;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        table th {
+            background: #e9f1fc;
+        }
+        .tip {
+            background: #eaffea;
+            border-left: 4px solid #4caf50;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .warn {
+            background: #fff5e6;
+            border-left: 4px solid #ffc107;
+            margin: 1.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+        }
+        .diagram {
+            background: #f9fcff;
+            border-radius: 8px;
+            margin: 2em auto;
+            text-align: center;
+            padding: 12px 0 0.5em 0;
+            max-width: 700px;
+        }
+        nav {
+            margin-bottom: 2em;
+        }
+        nav a {
+            color: #234e70;
+            margin: 0 12px;
+        }
+        a {
+            color: #234e70;
+            text-decoration: underline;
+        }
+        blockquote {
+            border-left: 4px solid #aac6da;
+            margin: 1.5em 0;
+            padding-left: 1em;
+            background: #f7fafd;
+            color: #234e70;
+            border-radius: 5px;
+        }
+        .keyword {
+            color: #169822;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ansible Guidebook<br>
+        <span style="font-size:0.7em;">Strategies, Lookups, and Plugins</span></h1>
+</header>
+<main>
+<nav>
+    <a href="index.html#module10" title="Back to Book Index">&larr; Book Index</a>
+</nav>
+
+    <h2>1. Execution Strategies</h2>
+    <p>
+        <b>Ansible strategies</b> control <strong>how tasks are dispatched across multiple hosts</strong> during playbook runs. Choosing the right strategy optimizes speed, order, and resource utilization.
+    </p>
+    <table>
+        <tr>
+            <th>Strategy</th>
+            <th>Description</th>
+            <th>How to Set</th>
+        </tr>
+        <tr>
+            <td>linear</td>
+            <td>Default. Each play/task is executed on all hosts in order before next task starts. Preserves order, simplifies debugging.</td>
+            <td>Default, or <pre>strategy: linear</pre> in play</td>
+        </tr>
+        <tr>
+            <td>free</td>
+            <td>Each host runs as fast as possible, independently. Next task begins per-host as soon as previous task is done. Fast, but less synchronous.</td>
+            <td><pre>strategy: free</pre> in play or <br> <code>ANSIBLE_STRATEGY=free</code> environment variable</td>
+        </tr>
+        <tr>
+            <td>host_pinned</td>
+            <td>Pinning tasks to hosts for highly parallelized runs (less common).</td>
+            <td>Requires plugin or custom config</td>
+        </tr>
+    </table>
+    <pre>
+# Example: Using 'free' strategy in a playbook
+---
+- name: Fast-as-possible patching
+  hosts: all
+  strategy: free
+  tasks:
+    - name: Patch host
+      yum:
+        name: '*'
+        state: latest
+    </pre>
+
+    <div class="tip">
+        <b>Use strategy:</b>
+        <ul>
+            <li><b>linear</b> for most playbooks (order matters, dependencies, easy to debug)</li>
+            <li><b>free</b> for large-scale tasks where speed > order (e.g. patching hundreds of hosts in parallel)</li>
+        </ul>
+    </div>
+
+    <h2>2. Lookup Plugins</h2>
+    <p>
+        <b>Lookups</b> let your playbooks fetch data from files, external services, APIs, or other sources <strong>when playbooks run</strong> (not on managed hosts, but on the control node!). Useful for secrets, user lists, dynamic config, etc.
+    </p>
+    <h3>Common Lookup Plugins</h3>
+    <ul>
+        <li><code>file</code>: Read data from a file</li>
+        <li><code>env</code>: Fetch environment variable</li>
+        <li><code>password</code>: Generate random passwords</li>
+        <li><code>csvfile</code>: Read CSV rows into playbooks <b>(see practical)</b></li>
+        <li><code>pipe</code>: Run command and use output</li>
+        <li><code>redis_kv</code>, <code>aws_ssm</code>, <code>hashi_vault</code>: Fetch from external systems</li>
+    </ul>
+    <pre>
+- name: Use a file lookup
+  debug:
+    msg: "{{ lookup('file', '/etc/motd') }}"
+- name: Use env lookup
+  debug:
+    msg: "{{ lookup('env','HOME') }}"
+    </pre>
+    <h3>File, CSV, and External Lookups</h3>
+    <pre>
+- name: Add users from CSV (see exercise)
+  user:
+    name: "{{ item.username }}"
+    uid: "{{ item.uid }}"
+    state: present
+  loop: "{{ lookup('csvfile', 'users.csv', delimiter=',') }}"
+    </pre>
+    <pre>
+# users.csv
+username,uid
+alice,1101
+bob,1102
+    </pre>
+    <blockquote>
+        <b>Every row in the CSV becomes an item in the loop—great for mass onboarding from HR/provisioning sources!</b>
+    </blockquote>
+
+    <h3>When/Where to Use Lookup Plugins</h3>
+    <ul>
+        <li>Secret injection (<code>ansible-vault</code> or external secret store)</li>
+        <li>Bulk resource creation driven by spreadsheets/lists</li>
+        <li>Loading site/network config data per deployment</li>
+        <li><b>Lookups always run on the control node, not the target!</b></li>
+    </ul>
+
+    <h2>3. Filters: Transforming Data In Place</h2>
+    <p>
+        <strong>Filters</strong> let you reshape, select, transform, and aggregate data right in your playbooks and templates.
+    </p>
+    <h4>Common Filter Examples</h4>
+    <pre>
+# Uppercase all usernames, join with comma
+{{ userlist | map('upper') | join(',') }}
+
+# Only unique items in a list
+{{ mylist | unique }}
+
+# Sort a dictionary's keys alphabetically
+{{ some_dict | dictsort }}
+
+# Get the length of a list
+{{ userlist | length }}
+    </pre>
+    <ul>
+        <li>All Jinja2 filters are available, plus many Ansible-specific ones (see <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank">full list</a>).</li>
+    </ul>
+
+    <h2>4. Callback Plugins: Event-Driven Output & Integration</h2>
+    <p>
+        <b>Callback plugins</b> control <strong>how Ansible outputs results, logs, and events during playbook runs</strong>. They enable CI/CD notifications, Slack/email alerts, JSON logs for SIEM, or even custom outputs for dashboards.
+    </p>
+    <ul>
+        <li>Some bundled callbacks: <code>default</code>, <code>minimal</code>, <code>json</code>, <code>yaml</code>, <code>profile_tasks</code>, <code>timer</code>, <code>slack</code> (community)</li>
+        <li>Activate via <code>ansible.cfg</code> or <code>ANSIBLE_STDOUT_CALLBACK</code></li>
+        <li>
+            <pre>
+[defaults]
+stdout_callback = yaml
+callback_whitelist = profile_tasks, timer
+            </pre>
+        </li>
+        <li>Third-party: Slack, email, HTTP POST, Splunk, custom in-house</li>
+    </ul>
+    <blockquote>
+        <b>Use callback plugins for:</b> CI integration, auditing, performance timing, security info, BI dashboards.
+    </blockquote>
+
+    <h3>Example: Human-Readable Output + Timing</h3>
+    <pre>
+# ansible.cfg
+[defaults]
+stdout_callback = yaml
+callback_whitelist = timer
+    </pre>
+    <pre>
+ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook ...
+    </pre>
+
+    <h3>Example: Slack Notifications (Community Supported)</h3>
+    <pre>
+# ansible.cfg
+[defaults]
+callback_whitelist = slack
+
+[callback_slack]
+token=YOURTOKEN
+channel=#automation
+    </pre>
+
+    <h3>Build Your Own Callback Plugin</h3>
+    <ol>
+        <li>Create a new Python file in <code>callback_plugins/</code> in your repo/project</li>
+        <li>Name must start with <code>callback_</code></li>
+        <li>Implement the official Ansible plugin API (see <a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html" target="_blank">plugin dev docs</a>)</li>
+        <li>Example skeleton:
+<pre>
+# callback_plugins/callback_myoutput.py
+from ansible.plugins.callback import CallbackBase
+
+class CallbackModule(CallbackBase):
+    def v2_playbook_on_task_start(self, task, is_conditional):
+        print("Starting task:", task.get_name())
+</pre>
+        </li>
+        <li>Enable via <code>callback_whitelist</code> in <code>ansible.cfg</code></li>
+    </ol>
+
+    <h2>5. Writing Custom Lookup & Filter Plugins</h2>
+    <ul>
+        <li>You can write your own plugins for:
+            <ul>
+                <li>Lookups (fetch data from internal systems)</li>
+                <li>Filters (custom data transforms)</li>
+                <li>Callbacks (custom output, alerting, triggers)</li>
+            </ul>
+        </li>
+        <li>Put custom plugin code in <code>lookup_plugins/</code>, <code>filter_plugins/</code>, <code>callback_plugins/</code> in your project/role.</li>
+    </ul>
+    <h4>Example Custom Lookup (Pseudo-Code)</h4>
+    <pre>
+# lookup_plugins/lookups_myapi.py
+from ansible.plugins.lookup import LookupBase
+
+class LookupModule(LookupBase):
+    def run(self, terms, variables=None, **kwargs):
+        # Your code here (call REST API, return data)
+        return ["foo", "bar"]
+    </pre>
+    <ul>
+        <li>See <a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html" target="_blank">Developing Ansible Plugins</a> for deep details.</li>
+    </ul>
+
+    <h2>6. Practical Exercise: Add Users from a CSV Using Lookups</h2>
+    <h3>Scenario</h3>
+    <p>You receive a user onboarding <b>users.csv</b> file with new accounts for all servers. Use a lookup to process and add them.</p>
+    <h4>Step 1: Prepare <code>users.csv</code></h4>
+    <pre>
+username,uid,shell
+alice,1101,/bin/bash
+bob,1102,/sbin/nologin
+carol,1103,/bin/zsh
+    </pre>
+    <h4>Step 2: Playbook</h4>
+    <pre>
+---
+- name: Bulk add users from CSV
+  hosts: all
+  become: yes
+  vars:
+    user_list: "{{ lookup('csvfile', 'users.csv', delimiter=',') }}"
+  tasks:
+    - name: Ensure users exist
+      user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid }}"
+        shell: "{{ item.shell }}"
+        state: present
+      loop: "{{ user_list }}"
+    </pre>
+    <ol>
+        <li><b>Place <code>users.csv</code> in the same directory as your playbook.</b></li>
+        <li><b>Run:</b> <code>ansible-playbook -i inventory bulk_users.yaml</code></li>
+    </ol>
+    <blockquote>
+        <b>Result:</b> All users in users.csv are created; repeat runs are idempotent.
+    </blockquote>
+    <div class="tip">
+        <b>Lookups are especially powerful for integrating with business or CI/CD data feeds.</b>
+    </div>
+
+    <h2>7. Best Practices & Troubleshooting</h2>
+    <ul>
+        <li>Use <b>lookups</b> for control node data (not target-driven facts)</li>
+        <li>Keep heavy/slow lookups out of inner loops—prefetch where possible</li>
+        <li>Check documentation for compatible plugin/filter names; fully-qualify (<code>community.general.some_lookup</code>) if using a collection</li>
+        <li>For plugins, keep code versioned beside playbooks/roles</li>
+        <li>Document plugin API keys, environment requirements, etc. in <code>README.md</code> or role meta</li>
+    </ul>
+    <div class="warn">
+        <b>Troubleshooting:</b>
+        <ul>
+            <li>Plugin not found? Check path and spelling, and ensure your custom plugin is in the right directory</li>
+            <li>Callback not firing? Confirm <code>callback_whitelist</code> or <code>stdout_callback</code> in <code>ansible.cfg</code></li>
+            <li>CSV issues? Ensure file is accessible to control node, well-formatted, and contains column headers</li>
+        </ul>
+    </div>
+
+    <h2>8. References & Further Reading</h2>
+    <ul>
+        <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_stratergies.html" target="_blank">Execution Strategies</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_lookups.html" target="_blank">Lookup Plugins</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank">Filters Reference</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/plugins/callback.html" target="_blank">Callback Plugins Reference</a></li>
+        <li><a href="https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html" target="_blank">Developing Plugins</a></li>
+    </ul>
+    <div class="tip">
+        <b>
+        Strategies, lookups, and plugins make Ansible a uniquely powerful enterprise automation tool.<br>
+        Learn and master these to bring advanced data integration and real-time adaptivity to all your playbooks!
+        </b>
+    </div>
+</main>
+<footer>
+    &copy; 2024 Ansible Guidebook &middot; Strategies, Lookups, and Plugins
+</footer>
+</body>
+</html>
