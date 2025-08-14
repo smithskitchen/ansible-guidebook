@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ansible Playbook Explanation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    pre {
+      background-color: #eef;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    section {
+      margin-bottom: 30px;
+    }
+    .box {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+<nav>
+    <a href="Module 3 playbooks-variables.html" title="Back to Module 3">&larr; Back to Module 3</a>
+</nav>
+  <div class="box">
+    <h1>🧾 Ansible Playbook Explanation</h1>
+
+    <section>
+      <h2>❓ Question: What does the following playbook do?</h2>
+      <pre>
+- name: Configure web server
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Deploy index.html
+      copy:
+        src: ./index.html
+        dest: /var/www/html/index.html
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+      </pre>
+    </section>
+
+    <section>
+      <h2>📘 Playbook Overview</h2>
+      <ul>
+        <li><strong>name:</strong> Describes the play's purpose.</li>
+        <li><strong>hosts: web</strong> — Targets servers in the "web" group.</li>
+        <li><strong>become: yes</strong> — Uses elevated privileges (sudo).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>🛠 Tasks Breakdown</h2>
+      <h3>1. Install nginx</h3>
+      <ul>
+        <li>Uses the <code>apt</code> module to install nginx.</li>
+        <li><code>state: present</code> ensures it's installed.</li>
+      </ul>
+
+      <h3>2. Deploy index.html</h3>
+      <ul>
+        <li>Uses the <code>copy</code> module to place a local HTML file on the server.</li>
+        <li>If the file changes, it triggers the <code>Reload nginx</code> handler.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>🔁 Handlers</h2>
+      <ul>
+        <li><strong>Reload nginx</strong> — Reloads the nginx service only if notified.</li>
+        <li>Efficient: avoids unnecessary reloads unless changes occur.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>🧠 Summary Table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>hosts: web</td>
+            <td>Targets web servers</td>
+          </tr>
+          <tr>
+            <td>become: yes</td>
+            <td>Runs tasks with elevated privileges</td>
+          </tr>
+          <tr>
+            <td>apt</td>
+            <td>Installs nginx</td>
+          </tr>
+          <tr>
+            <td>copy</td>
+            <td>Deploys a web page</td>
+          </tr>
+          <tr>
+            <td>notify</td>
+            <td>Triggers handler if file changes</td>
+          </tr>
+          <tr>
+            <td>handler</td>
+            <td>Reloads nginx only when needed</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

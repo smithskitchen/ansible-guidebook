@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YAML Anchors and Aliases Explained</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 40px;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    pre {
+      background-color: #eef;
+      padding: 15px;
+      border-left: 4px solid #3498db;
+      overflow-x: auto;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .highlight {
+      background-color: #ffffcc;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+<nav>
+    <a href="YAML.html" title="Back to Module 3">&larr; Back to Module 3</a>
+</nav>
+
+  <h1>Understanding YAML Anchors and Aliases</h1>
+
+  <div class="section">
+    <h2>🧩 Question</h2>
+    <pre>
+defaults: &default_settings
+  retries: 5
+  timeout: 30
+
+server1:
+  <<: *default_settings
+  host: web01
+
+server2:
+  <<: *default_settings
+  host: web02
+    </pre>
+  </div>
+
+  <div class="section">
+    <h2>📘 Explanation</h2>
+    <p>This YAML snippet demonstrates the use of <span class="highlight">anchors (&)</span> and <span class="highlight">aliases (*)</span> to avoid repetition—commonly referred to as the <strong>DRY principle</strong> ("Don't Repeat Yourself").</p>
+
+    <h3>🔹 Anchor Definition</h3>
+    <p><code>&default_settings</code> creates an anchor named <strong>default_settings</strong>, which stores the shared configuration:</p>
+    <pre>
+defaults: &default_settings
+  retries: 5
+  timeout: 30
+    </pre>
+
+    <h3>🔹 Alias Usage</h3>
+    <p><code>*default_settings</code> is used to import the anchor's content into other sections:</p>
+    <pre>
+server1:
+  <<: *default_settings
+  host: web01
+
+server2:
+  <<: *default_settings
+  host: web02
+    </pre>
+
+    <h3>📦 Final Expanded Form</h3>
+    <p>After resolving the alias, the YAML would look like this:</p>
+    <pre>
+server1:
+  retries: 5
+  timeout: 30
+  host: web01
+
+server2:
+  retries: 5
+  timeout: 30
+  host: web02
+    </pre>
+
+    <h3>✅ Benefits</h3>
+    <ul>
+      <li><strong>Efficiency</strong>: Avoids repeating common configuration blocks.</li>
+      <li><strong>Maintainability</strong>: Easier to update shared settings in one place.</li>
+      <li><strong>Readability</strong>: Keeps YAML files clean and organized.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Source: YAML for Ansible – From Basics to Advanced
+  </footer>
+
+</body>
+</html>

@@ -216,6 +216,9 @@ server2:
     <div class="tip">
         This approach works well for playbook variables, especially when you have shared defaults.
     </div>
+	<nav>
+    <a href="playbook-explained4.html" title="Explain more">Explain more</a>
+	</nav>
 
     <h2>7. Comments</h2>
     <p>Use <code>#</code> for comments:</p>
@@ -258,8 +261,8 @@ example3: "0123"  # Prevents interpreting as octal
       copy:
         dest: /var/www/html/index.html
         content: |
-          <h1>Welcome to {{ inventory_hostname }}</h1>
-          <p>Running on port {{ nginx_port }}</p>
+          &lt;h1&gt;Welcome to {{ inventory_hostname }}&lt;/h1&gt;
+          &lt;p&gt;Running on port {{ nginx_port }}&lt;/p&gt;
     </pre>
 
     <h2>10. YAML Linting & Best Practices</h2>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Install Common Tools - Ansible Playbook Explained</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fbfc;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    pre {
+      background-color: #eef;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    section {
+      margin-bottom: 30px;
+    }
+    .container {
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    ul {
+      line-height: 1.6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+    .highlight {
+      background-color: #fff8dc;
+      padding: 10px;
+      border-left: 4px solid #f39c12;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<nav>
+    <a href="Module 3 playbooks-variables.html" title="Back to Module 3">&larr; Back to Module 3</a>
+</nav>
+  <div class="container">
+    <h1>🧾 Ansible Playbook Explanation</h1>
+
+    <section>
+      <h2>❓ Question: What does the following playbook do?</h2>
+      <pre>
+- name: Install common tools
+  hosts: all
+  tasks:
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - curl
+        - rsync
+
+    - name: Only on Ubuntu
+      debug:
+        msg: "This is Ubuntu"
+      when: ansible_facts['os_family'] == "Debian"
+      </pre>
+    </section>
+
+    <section>
+      <h2>📘 Playbook Overview</h2>
+      <ul>
+        <li><strong>name:</strong> Describes the play's purpose: installing common tools.</li>
+        <li><strong>hosts: all</strong> — Targets all hosts in the inventory.</li>
+        <li><strong>tasks:</strong> Contains the actions to be executed.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>🔁 Task Breakdown</h2>
+      <h3>1. Install Packages</h3>
+      <ul>
+        <li>Uses the <code>apt</code> module to install multiple packages.</li>
+        <li><code>loop:</code> iterates over a list: <code>git</code>, <code>curl</code>, and <code>rsync</code>.</li>
+        <li><code>name: "{{ item }}"</code> dynamically inserts each package name using Jinja2 templating.</li>
+        <li><code>state: present</code> ensures each package is installed.</li>
+      </ul>
+      <div class="highlight">
+        <strong>💡 How the loop works:</strong><br />
+        The <code>loop:</code> provides a list of items: <code>git</code>, <code>curl</code>, and <code>rsync</code>.<br />
+        For each item in the list, Ansible replaces <code>{{ item }}</code> with the current value.<br />
+        So the task runs three times:
+        <ul>
+          <li>First with <code>name: git</code></li>
+          <li>Then with <code>name: curl</code></li>
+          <li>Finally with <code>name: rsync</code></li>
+        </ul>
+        This makes the task reusable and efficient.
+      </div>
+
+      <h3>2. Conditional Debug Message</h3>
+      <ul>
+        <li>Uses the <code>debug</code> module to print a message.</li>
+        <li>Runs only if the host's OS family is <code>Debian</code> (which includes Ubuntu).</li>
+        <li>Uses <code>ansible_facts['os_family']</code> to determine the OS type.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>🧠 Summary Table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>hosts: all</td>
+            <td>Targets all inventory hosts</td>
+          </tr>
+          <tr>
+            <td>apt</td>
+            <td>Installs packages using APT (Debian-based systems)</td>
+          </tr>
+          <tr>
+            <td>loop</td>
+            <td>Iterates over a list of items (packages)</td>
+          </tr>
+          <tr>
+            <td>name: "{{ item }}"</td>
+            <td>Uses Jinja2 templating to insert each package name dynamically</td>
+          </tr>
+          <tr>
+            <td>debug</td>
+            <td>Prints a message to the console</td>
+          </tr>
+          <tr>
+            <td>when</td>
+            <td>Conditionally runs a task based on OS family</td>
+          </tr>
+          <tr>
+            <td>ansible_facts</td>
+            <td>Uses gathered system facts for logic</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

@@ -235,6 +235,9 @@
         <li><b>notify:</b> triggers the matching handler if changes occurred</li>
         <li><b>handlers:</b> are only run if notified (for restart, reload, etc.)</li>
     </ul>
+	<nav>
+    <a href="playbook-explained1.html" title="Explain this playbook"> Explain this playbook</a>
+	</nav>
 
     <h3>Loops, Conditionals, and Includes</h3>
     <ul>
@@ -260,6 +263,9 @@
         msg: "This is Ubuntu"
       when: ansible_facts['os_family'] == "Debian"
     </pre>
+	<nav>
+    <a href="playbook-explained2.html" title="Explain this playbook"> Explain this playbook</a>
+	</nav>
 
     <h2>3. Variables in Ansible</h2>
     <p>
@@ -479,6 +485,9 @@ feature_x = enabled
         content: |
           This is host: {{ host_info.stdout }}
     </pre>
+	<nav>
+    <a href="playbook-explained3.html" title="Explain this playbook"> Explain this playbook</a>
+	</nav>
 
     <h2>6. Troubleshooting and Best Practices</h2>
     <h4>Common Pitfalls</h4>

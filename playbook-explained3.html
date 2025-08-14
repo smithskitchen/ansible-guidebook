@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ansible Variables & YAML Syntax</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #005f99;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .info, .yaml, .table, .explanation {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .yaml pre, .explanation pre {
+      background-color: #f0f0f0;
+      padding: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+<nav>
+    <a href="Module 3 playbooks-variables.html" title="Back to Module 3">&larr; Back to Module 3</a>
+</nav>
+
+  <h1>Ansible System Info & YAML Syntax</h1>
+
+  <div class="section info">
+    <h2>System Info (Dynamic via Ansible)</h2>
+    <p><strong>Hostname:</strong> {{ host_info.stdout }}</p>
+    <p><strong>IP Address:</strong> {{ ansible_default_ipv4.address }}</p>
+    <p><strong>Operating System:</strong> {{ ansible_facts['distribution'] }}</p>
+    <p><strong>Web Service:</strong> {{ web_service }}</p>
+    <p><strong>HTTP Port:</strong> {{ http_port }}</p>
+  </div>
+
+  <div class="section yaml">
+    <h2>YAML Block Scalar Examples</h2>
+
+    <h3>Literal Block Scalar <code>|</code></h3>
+    <pre>
+content: |
+  Line one
+  Line two
+  Line three
+    </pre>
+
+    <h3>Folded Block Scalar <code>></code></h3>
+    <pre>
+content: >
+  Line one Line two Line three
+    </pre>
+  </div>
+
+  <div class="section table">
+    <h2>YAML Symbols Reference</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>|</code></td>
+          <td>Literal Block Scalar</td>
+          <td>Preserves line breaks and formatting exactly as written</td>
+        </tr>
+        <tr>
+          <td><code>></code></td>
+          <td>Folded Block Scalar</td>
+          <td>Converts line breaks into spaces</td>
+        </tr>
+        <tr>
+          <td><code>{{ }}</code></td>
+          <td>Jinja2 Expression</td>
+          <td>Used to insert variables dynamically</td>
+        </tr>
+        <tr>
+          <td><code>-</code></td>
+          <td>List Item</td>
+          <td>Indicates an item in a list (e.g., tasks, hosts)</td>
+        </tr>
+        <tr>
+          <td><code>:</code></td>
+          <td>Key-Value Separator</td>
+          <td>Separates keys from values in mappings</td>
+        </tr>
+        <tr>
+          <td><code>#</code></td>
+          <td>Comment</td>
+          <td>Anything after <code>#</code> is ignored by YAML</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section explanation">
+    <h2>Explanation of Ansible Task</h2>
+    <pre>
+- name: Create /var/www/html/info.html
+  copy:
+    dest: /var/www/html/info.html
+    content: |
+      This is host: {{ host_info.stdout }}
+    </pre>
+    <ul>
+      <li><strong>name:</strong> Describes the task: creating an HTML file.</li>
+      <li><strong>copy:</strong> Uses the copy module to write content directly to a file.</li>
+      <li><strong>dest:</strong> Specifies the destination path on the remote host.</li>
+      <li><strong>content:</strong> Inline content for the file. The <code>{{ host_info.stdout }}</code> is a Jinja2 template that inserts the hostname retrieved earlier.</li>
+    </ul>
+
+    <h3>📌 Line in Question</h3>
+    <pre>
+content: |
+  This is host: {{ host_info.stdout }}
+    </pre>
+
+    <h3>🧠 What <code>|</code> Means in YAML</h3>
+    <ul>
+      <li>The <code>|</code> tells YAML to treat everything that follows as a <strong>literal block of text</strong>.</li>
+      <li>It preserves <strong>line breaks</strong> and <strong>indentation</strong> exactly as written.</li>
+      <li>This is ideal for writing multi-line content like HTML, configuration files, or scripts.</li>
+    </ul>
+  </div>
+  <div class="section explanation">
+  <h2>Another Example</h2>
+  <pre>
+---
+- name: Deploy styled system info page
+  hosts: web
+  become: yes
+  tasks:
+    - name: Get hostname
+      command: hostname
+      register: host_info
+
+    - name: Create HTML file with literal block (|)
+      copy:
+        dest: /var/www/html/literal.html
+        content: |
+          &lt;html&gt;
+            &lt;head&gt;
+              &lt;title&gt;System Info&lt;/title&gt;
+              &lt;style&gt;
+                body {
+                  background-color: #f0f0f0;
+                  font-family: Arial, sans-serif;
+                  padding: 20px;
+                }
+                h1 {
+                  color: #333;
+                }
+              &lt;/style&gt;
+            &lt;/head&gt;
+            &lt;body&gt;
+              &lt;h1&gt;This is host: {{ host_info.stdout }}&lt;/h1&gt;
+            &lt;/body&gt;
+          &lt;/html&gt;
+
+    - name: Create HTML file with folded block (&gt;)
+      copy:
+        dest: /var/www/html/folded.html
+        content: &gt;
+          &lt;html&gt;&lt;head&gt;&lt;title&gt;Folded Page&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+          &lt;h1&gt;This is host: {{ host_info.stdout }}&lt;/h1&gt;
+          &lt;/body&gt;&lt;/html&gt;
+  </pre>
+
+  <ul>
+    <li><strong>Get hostname:</strong> Uses the <code>command</code> module to retrieve the system's hostname and stores it in <code>host_info</code>.</li>
+    <li><strong>Create literal HTML file:</strong> Uses <code>|</code> to preserve formatting and line breaks for a styled HTML page.</li>
+    <li><strong>Create folded HTML file:</strong> Uses <code>&gt;</code> to compress the HTML into a single line, useful for compact content.</li>
+  </ul>
+</div>
+
+</body>
+</html>
